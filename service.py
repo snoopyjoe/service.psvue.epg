@@ -1,10 +1,12 @@
 import os
 import requests
+import time
 import xbmc, xbmcplugin, xbmcgui, xbmcaddon
 
 ADDON = xbmcaddon.Addon()
-ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
+ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
+UA_ANDROID_TV = 'Mozilla/5.0 (Linux; Android 6.0.1; Hub Build/MHC19J; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Safari/537.36'
 # -----------------------------------------------------------------------------------------
 # EPG Code
 # Setup
@@ -12,7 +14,7 @@ PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
 #  - Enable Web Server (Settings/Services/Control/Allow remote control via HTTP)
 #  - Enabled PVR IPTV Simple Client (Addons/My add-ons/PVR Clients)
 #  - Set M3U play Local Path (Home Folder/userdata/addon_data/plugin.video.psvue/playlist.m3u)
-#  - Set IPTV Channel Logos - Channels Logos from XMLTV prefer M3U
+#  - Set IPTV Channel Logos - Channels Logos from XMLTV to prefer M3U
 # ------------------------------------------------------------------------------------------
 
 
@@ -41,7 +43,7 @@ def build_playlist():
                         break
 
             url = 'http://localhost:8080/jsonrpc?request='
-            url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.epg","params":{"mode":"902","url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
+            url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.epg","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
 
             m3u_file.write("\n")
             channel_info = '#EXTINF:-1 tvg-id="'+channel_id+'" tvg-name="' + title + '"'
@@ -169,20 +171,13 @@ def load_cookies():
     return cj
 
 
-def get_params():
-    param = []
-    paramstring = sys.argv[2]
-    if len(paramstring) >= 2:
-        params = sys.argv[2]
-        cleanedparams = params.replace('?', '')
-        if (params[len(params) - 1] == '/'):
-            params = params[0:len(params) - 2]
-        pairsofparams = cleanedparams.split('&')
-        param = {}
-        for i in range(len(pairsofparams)):
-            splitparams = {}
-            splitparams = pairsofparams[i].split('=')
-            if (len(splitparams)) == 2:
-                param[splitparams[0]] = splitparams[1]
+if __name__ == '__main__':
+    monitor = xbmc.Monitor()
 
+    while not monitor.abortRequested():
+        # Sleep/wait for abort for 10 seconds
+        if monitor.waitForAbort(10):
+            # Abort was requested while waiting. We should exit
+            break
+        xbmc.log("hello addon! %s" % time.time(), level=xbmc.LOGNOTICE)
 
