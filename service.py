@@ -80,9 +80,12 @@ def build_playlist():
     channel_ids_str = ",".join(channel_ids)
     PS_VUE_ADDON.setSetting(id='channelIDs', value=channel_ids_str)
     PS_VUE_ADDON.setSetting(id='channelNamesXML', value=channel_names_str)
-    IPTV_SIMPLE_ADDON.setSetting(id='m3uPathType', value='0')
-    IPTV_SIMPLE_ADDON.setSetting(id='m3uPath', value=os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"))
-    IPTV_SIMPLE_ADDON.setSetting(id='logoFromEpg', value='1')
+    if IPTV_SIMPLE_ADDON.getSetting('m3uPathType') != '0':
+        IPTV_SIMPLE_ADDON.setSetting(id='m3uPathType', value='0')
+    if IPTV_SIMPLE_ADDON.getSetting('m3uPath') != os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"):
+        IPTV_SIMPLE_ADDON.setSetting(id='m3uPath', value=os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"))
+    if IPTV_SIMPLE_ADDON.getSetting('logoFromEpg') != '1':
+        IPTV_SIMPLE_ADDON.setSetting(id='logoFromEpg', value='1')
 
     dialog = xbmcgui.Dialog()
     dialog.notification('PS Vue Playlist', 'The playlist has finished building', xbmcgui.NOTIFICATION_INFO, 3000, False)
@@ -117,8 +120,10 @@ def build_epg():
     xmltv_file.close()
     progress.update(100, 'Done!')
     progress.close()
-    IPTV_SIMPLE_ADDON.setSetting(id='epgPathType', value='0')
-    IPTV_SIMPLE_ADDON.setSetting(id='epgPath', value=os.path.join(ADDON_PATH_PROFILE, "epg.xml"))
+    if IPTV_SIMPLE_ADDON.getSetting('epgPathType') != '0':
+        IPTV_SIMPLE_ADDON.setSetting(id='epgPathType', value='0')
+    if IPTV_SIMPLE_ADDON.getSetting(id='epgPath') != os.path.join(ADDON_PATH_PROFILE, "epg.xml"):
+        IPTV_SIMPLE_ADDON.setSetting(id='epgPath', value=os.path.join(ADDON_PATH_PROFILE, "epg.xml"))
 
 
 def build_epg_channel(xmltv_file, channel_id):
