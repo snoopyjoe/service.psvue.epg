@@ -2,7 +2,7 @@ import cookielib
 import os
 import requests, urllib
 from datetime import datetime, timedelta
-import xbmc, xbmcplugin, xbmcgui, xbmcaddon
+import xbmc, xbmcplugin, xbmcgui, xbmcaddon, xbmcvfs
 
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
 ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
@@ -23,8 +23,18 @@ VERIFY = False
 
 
 def build_playlist():
-    json_source = get_json(EPG_URL + '/browse/items/channels/filter/all/sort/channeltype/offset/0/size/500')
+    """
+    <webserverpassword>web_passwor</webserverpassword>
+    <webserverport default="true">8080</webserverport>
+    <webserverusername>web_username</webserverusername>
+    """
+    settings_file = xbmcvfs.File(os.path.join("special://userdata","guisettings.xml"),"r")
+    gui_settings = settings_file.read()
+    webserver_usr = find(gui_settings,'<webserverusername>','</webserverusername>')
+    webserver_pwd = find(gui_settings,'<webserverpassword>','</webserverpassword>')
+    webserver_port = find(gui_settings, '<webserverport default="true">', '</webserverport>')
 
+    json_source = get_json(EPG_URL + '/browse/items/channels/filter/all/sort/channeltype/offset/0/size/500')
     m3u_file = open(os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"),"w")
     m3u_file.write("#EXTM3U")
     m3u_file.write("\n")
@@ -46,8 +56,14 @@ def build_playlist():
                         logo = logo.encode('utf-8')
                         break
 
-            url = 'http://localhost:8080/jsonrpc?request='
+            url = 'http://'
+            if webserver_usr and webserver_pwd: url += webserver_usr + ':' + webserver_pwd + '@'
+            url += 'localhost:' + webserver_port
+            url += '/jsonrpc?request='
             url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.epg","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
+
+            #url = 'http://localhost:8080/jsonrpc?request='
+            #url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.epg","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
 
             m3u_file.write("\n")
             channel_info = '#EXTINF:-1 tvg-id="'+channel_id+'" tvg-name="' + title + '"'
@@ -179,17 +195,29 @@ def load_cookies():
     return cj
 
 
-def check_files():
-    if not os.path.isfile(os.path.join(ADDON_PATH_PROFILE, "playlist.m3u")):
-        build_playlist()
+def find(source, start_str, end_str):
+    start = source.find(start_str)
+    end = source.find(end_str, start + len(start_str))
 
-    #if not os.path.isfile(os.path.join(ADDON_PATH_PROFILE, "epg.xml")):
+    if start != -1:
+        return source[start + len(start_str):end]
+    else:
+        return ''
+
+
+def check_files():
+    build_playlist()
     build_epg()
+
+    # Reload pvr simple iptv
+    xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":8,"params":{"addonid":"pvr.iptvsimple","enabled":false}}')
+    xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":8,"params":{"addonid":"pvr.iptvsimple","enabled":true}}')
 
 
 if __name__ == '__main__':
     monitor = xbmc.Monitor()
     last_update = datetime.now()
+    check_files()
     while not monitor.abortRequested():
         # Sleep/wait for abort for 10 minutes
         if monitor.waitForAbort(600):
