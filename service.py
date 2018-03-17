@@ -87,7 +87,7 @@ def build_playlist():
     IPTV_SIMPLE_ADDON.setSetting(id='logoFromEpg', value='1')
 
     dialog = xbmcgui.Dialog()
-    dialog.notification('PS Vue Playlist', 'The playlist has finished building', xbmcgui.NOTIFICATION_INFO, 3000)
+    dialog.notification('PS Vue Playlist', 'The playlist has finished building', xbmcgui.NOTIFICATION_INFO, 3000, False)
 
 
 def build_epg():
@@ -103,7 +103,7 @@ def build_epg():
     xbmc.log(channel_names_xml)
     xbmc.log("-----------------------------------------------------------------------------------------------------")
 
-    progress = xbmcgui.DialogProgress()
+    progress = xbmcgui.DialogProgressBG()
     progress.create('PS Vue EPG')
     progress.update(0, 'Retrieving Programming Information...')
 
@@ -149,7 +149,7 @@ def build_epg_channel(xmltv_file, channel_id):
                 stop_time = datetime.strptime(program['expiration_date'], DATE_FORMAT)
                 stop_time = stop_time.strftime("%Y%m%d%H%M%S")
 
-                xmltv_file.write('<programme start="' + start_time + '" stop="' + stop_time + '" channel="' + channel_id + '">\n')
+                xmltv_file.write('<programme start="' + start_time + '" stop="' + stop_time + '"  channel="' + channel_id + '">\n')
                 xmltv_file.write('    <title lang="en">' + title + '</title>\n')
                 xmltv_file.write('    <sub-title lang="en">' + sub_title + '</sub-title>\n')
                 xmltv_file.write('    <desc lang="en">'+desc+'</desc>\n')
