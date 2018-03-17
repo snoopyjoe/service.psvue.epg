@@ -30,11 +30,14 @@ def build_playlist():
         dialog.ok('PS Vue EPG','Please enable web server:\n(Settings > Services > Control > Allow remote control via HTTP)')
         sys.exit()
 
-    webserver_usr = find(gui_settings,'<webserverusername>','</webserverusername>')
+    webserver_usr = find(gui_settings,'<webserverusername default="true">','</webserverusername>')
+    if not webserver_usr: webserver_usr = find(gui_settings,'<webserverusername>','</webserverusername>')
+
     webserver_pwd = find(gui_settings,'<webserverpassword  default="true">','</webserverpassword>')
-    if webserver_pwd == '': webserver_pwd = find(gui_settings, '<webserverpassword>', '</webserverpassword>')
+    if not webserver_pwd: webserver_pwd = find(gui_settings, '<webserverpassword>', '</webserverpassword>')
+
     webserver_port = find(gui_settings, '<webserverport default="true">', '</webserverport>')
-    if webserver_port == '': webserver_port = find(gui_settings, '<webserverport>', '</webserverport>')
+    if not webserver_port: webserver_port = find(gui_settings, '<webserverport>', '</webserverport>')
 
     json_source = get_json(EPG_URL + '/browse/items/channels/filter/all/sort/channeltype/offset/0/size/500')
     m3u_file = open(os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"),"w")
@@ -57,6 +60,10 @@ def build_playlist():
                         logo = image['src']
                         logo = logo.encode('utf-8')
                         break
+
+            xbmc.log('port '+webserver_port)
+            xbmc.log('usr '+webserver_usr)
+            xbmc.log('pwd '+webserver_pwd)
 
             url = 'http://'
             if webserver_usr and webserver_pwd: url += webserver_usr + ':' + webserver_pwd + '@'
@@ -290,11 +297,12 @@ def find(source, start_str, end_str):
 
 def check_files():
     build_playlist()
-    build_epg()
+    # build_epg()
 
     # Reload pvr
-    xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":8,"params":{"addonid":"pvr.iptvsimple","enabled":false}}')
-    xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":8,"params":{"addonid":"pvr.iptvsimple","enabled":true}}')
+    # This causes android to crash??
+    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":8,"params":{"addonid":"pvr.iptvsimple","enabled":false}}')
+    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":8,"params":{"addonid":"pvr.iptvsimple","enabled":true}}')
 
 
 if __name__ == '__main__':
