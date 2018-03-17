@@ -297,7 +297,7 @@ def find(source, start_str, end_str):
 
 def check_files():
     build_playlist()
-    # build_epg()
+    build_epg()
 
     # Reload pvr
     # This causes android to crash??
