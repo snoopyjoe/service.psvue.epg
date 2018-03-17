@@ -13,28 +13,22 @@ EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
 SHOW_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/airing/'
 VERIFY = False
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-# -----------------------------------------------------------------------------------------
-# EPG Code
-# Setup
-#  - Build Playlist (PS Vue Addon (Settings/Build Playlist)
-#  - Enable Web Server (Settings/Services/Control/Allow remote control via HTTP)
-#  - Enabled PVR IPTV Simple Client (Addons/My add-ons/PVR Clients)
-#  - Set M3U play Local Path (Home Folder/userdata/addon_data/plugin.video.psvue/playlist.m3u)
-#  - Set IPTV Channel Logos - Channels Logos from XMLTV to prefer M3U
-# ------------------------------------------------------------------------------------------
 
 
 def build_playlist():
-    """
-    <webserverpassword>web_passwor</webserverpassword>
-    <webserverport default="true">8080</webserverport>
-    <webserverusername>web_username</webserverusername>
-    """
     settings_file = xbmcvfs.File(os.path.join("special://userdata","guisettings.xml"),"r")
     gui_settings = settings_file.read()
+
+    if find(gui_settings,'<webserver default="true">','</webserver>') == 'false':
+        dialog = xbmcgui.Dialog()
+        dialog.ok('PS Vue EPG','Please enable web server:\n(Settings > Services > Control > Allow remote control via HTTP)')
+        sys.exit()
+
     webserver_usr = find(gui_settings,'<webserverusername>','</webserverusername>')
-    webserver_pwd = find(gui_settings,'<webserverpassword>','</webserverpassword>')
+    webserver_pwd = find(gui_settings,'<webserverpassword  default="true">','</webserverpassword>')
+    if webserver_pwd == '': webserver_pwd = find(gui_settings, '<webserverpassword>', '</webserverpassword>')
     webserver_port = find(gui_settings, '<webserverport default="true">', '</webserverport>')
+    if webserver_port == '': webserver_port = find(gui_settings, '<webserverport>', '</webserverport>')
 
     json_source = get_json(EPG_URL + '/browse/items/channels/filter/all/sort/channeltype/offset/0/size/500')
     m3u_file = open(os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"),"w")
@@ -63,9 +57,6 @@ def build_playlist():
             url += 'localhost:' + webserver_port
             url += '/jsonrpc?request='
             url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.epg","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
-
-            #url = 'http://localhost:8080/jsonrpc?request='
-            #url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.epg","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
 
             m3u_file.write("\n")
             channel_info = '#EXTINF:-1 tvg-id="'+channel_id+'" tvg-name="' + title + '"'
