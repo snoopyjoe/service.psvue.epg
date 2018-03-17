@@ -56,7 +56,7 @@ def build_playlist():
             if webserver_usr and webserver_pwd: url += webserver_usr + ':' + webserver_pwd + '@'
             url += 'localhost:' + webserver_port
             url += '/jsonrpc?request='
-            url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.epg","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
+            url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.module.psvueplay","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
 
             m3u_file.write("\n")
             channel_info = '#EXTINF:-1 tvg-id="'+channel_id+'" tvg-name="' + title + '"'
