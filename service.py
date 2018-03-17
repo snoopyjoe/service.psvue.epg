@@ -1,12 +1,16 @@
+import cookielib
 import os
-import requests
-import time
+import requests, urllib
+from datetime import datetime, timedelta
 import xbmc, xbmcplugin, xbmcgui, xbmcaddon
 
-ADDON = xbmcaddon.Addon()
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
 ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
 UA_ANDROID_TV = 'Mozilla/5.0 (Linux; Android 6.0.1; Hub Build/MHC19J; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Safari/537.36'
+CHANNEL_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/channel'
+EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
+SHOW_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/airing/'
+VERIFY = False
 # -----------------------------------------------------------------------------------------
 # EPG Code
 # Setup
@@ -59,20 +63,25 @@ def build_playlist():
     m3u_file.close()
 
     channel_ids_str = ",".join(channel_ids)
-    ADDON.setSetting(id='channelIDs', value=channel_ids_str)
-    ADDON.setSetting(id='channelNamesXML', value=channel_names_str)
+    PS_VUE_ADDON.setSetting(id='channelIDs', value=channel_ids_str)
+    PS_VUE_ADDON.setSetting(id='channelNamesXML', value=channel_names_str)
 
     dialog = xbmcgui.Dialog()
     dialog.notification('PS Vue Playlist', 'The playlist has finished building', xbmcgui.NOTIFICATION_INFO, 3000)
 
 
 def build_epg():
-    channel_ids = ADDON.getSetting('channelIDs').split(',')
-    channel_names_xml = ADDON.getSetting('channelNamesXML')
+    channel_ids = PS_VUE_ADDON.getSetting('channelIDs').split(',')
+    channel_names_xml = PS_VUE_ADDON.getSetting('channelNamesXML')
     xmltv_file = open(os.path.join(ADDON_PATH_PROFILE, "epg.xml"), "w")
     xmltv_file.write('<?xml version="1.0" encoding="utf-8" ?>\n')
     xmltv_file.write("<tv>\n")
     xmltv_file.write(channel_names_xml)
+
+    xbmc.log("-----------------------------------------------------------------------------------------------------")
+    xbmc.log(str(channel_ids))
+    xbmc.log(channel_names_xml)
+    xbmc.log("-----------------------------------------------------------------------------------------------------")
 
     progress = xbmcgui.DialogProgress()
     progress.create('PS Vue EPG')
@@ -85,7 +94,6 @@ def build_epg():
         progress.update(percent, message)
         build_epg_channel(xmltv_file, channel)
         i += 1
-
 
     xmltv_file.write('</tv>\n')
     xmltv_file.close()
@@ -115,9 +123,9 @@ def build_epg_channel(xmltv_file, channel_id):
                 if 'synopsis' in program:
                     desc = program['synopsis']
                     desc = desc.encode('utf-8')
-                start_time = string_to_date(program['airing_date'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                start_time = datetime.strptime(program['airing_date'], "%Y-%m-%dT%H:%M:%S.%fZ")
                 start_time = start_time.strftime("%Y%m%d%H%M%S")
-                stop_time = string_to_date(program['expiration_date'], "%Y-%m-%dT%H:%M:%S.%fZ")
+                stop_time = datetime.strptime(program['expiration_date'], "%Y-%m-%dT%H:%M:%S.%fZ")
                 stop_time = stop_time.strftime("%Y%m%d%H%M%S")
 
                 xmltv_file.write('<programme start="' + start_time + '" stop="' + stop_time + '" channel="' + channel_id + '">\n')
@@ -171,13 +179,25 @@ def load_cookies():
     return cj
 
 
+def check_files():
+    if not os.path.isfile(os.path.join(ADDON_PATH_PROFILE, "playlist.m3u")):
+        build_playlist()
+
+    #if not os.path.isfile(os.path.join(ADDON_PATH_PROFILE, "epg.xml")):
+    build_epg()
+
+
 if __name__ == '__main__':
     monitor = xbmc.Monitor()
-
+    last_update = datetime.now()
     while not monitor.abortRequested():
-        # Sleep/wait for abort for 10 seconds
-        if monitor.waitForAbort(10):
+        # Sleep/wait for abort for 10 minutes
+        if monitor.waitForAbort(600):
+            if last_update < datetime.now() - timedelta(hours=3):
+                check_files()
+                last_update = datetime.now()
+
             # Abort was requested while waiting. We should exit
             break
-        xbmc.log("hello addon! %s" % time.time(), level=xbmc.LOGNOTICE)
+        xbmc.log("hello addon!", level=xbmc.LOGNOTICE)
 
