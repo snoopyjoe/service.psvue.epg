@@ -14,10 +14,9 @@ VERIFY = False
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 if not xbmc.getCondVisibility('System.HasAddon(pvr.iptvsimple)'):
-    xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":8,"params":{"addonid":"pvr.iptvsimple","enabled":true}}')
-    # Wait for iptv to start
-    if xbmc.Monitor().waitForAbort(10):
-        sys.exit()
+    dialog = xbmcgui.Dialog()
+    dialog.notification('PS Vue EPG', 'Please enable PVR IPTV Simple Client', xbmcgui.NOTIFICATION_INFO, 5000, False)
+    sys.exit()
 
 IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
 
@@ -81,6 +80,7 @@ def build_playlist():
     channel_ids_str = ",".join(channel_ids)
     PS_VUE_ADDON.setSetting(id='channelIDs', value=channel_ids_str)
     PS_VUE_ADDON.setSetting(id='channelNamesXML', value=channel_names_str)
+    IPTV_SIMPLE_ADDON.setSetting(id='m3uPathType', value='0')
     IPTV_SIMPLE_ADDON.setSetting(id='m3uPath', value=os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"))
     IPTV_SIMPLE_ADDON.setSetting(id='logoFromEpg', value='1')
 
@@ -117,6 +117,7 @@ def build_epg():
     xmltv_file.close()
     progress.update(100, 'Done!')
     progress.close()
+    IPTV_SIMPLE_ADDON.setSetting(id='epgPathType', value='0')
     IPTV_SIMPLE_ADDON.setSetting(id='epgPath', value=os.path.join(ADDON_PATH_PROFILE, "epg.xml"))
 
 
