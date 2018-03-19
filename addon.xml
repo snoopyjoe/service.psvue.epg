@@ -6,9 +6,9 @@
     <import addon="plugin.video.psvue" version="2018.2.15"/>
     <import addon="script.module.psvueplay" version="2018.3.17"/>
   </requires>
-  <extension point="xbmc.service" library="service.py" start="login" />
-    <extension point="xbmc.addon.metadata">
+   <extension point="xbmc.service" library="service.py" start="login" />
+  <extension point="xbmc.addon.metadata">
     <platform>all</platform>
-    <summary lang="en_GB">PS Vue EPG Build Service</summary>
+    <summary lang="en">PS Vue EPG Build Service</summary>
   </extension>
 </addon>

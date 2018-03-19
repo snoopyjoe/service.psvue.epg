@@ -121,6 +121,7 @@ def build_epg():
         message = "Loading channel " + str(i) + ' of ' + str(len(channel_ids))
         progress.update(percent, message)
         build_epg_channel(xmltv_file, channel)
+        if xbmc.Monitor().abortRequested(): break
         i += 1
 
     xmltv_file.write('</tv>\n')
@@ -136,6 +137,7 @@ def build_epg():
 def build_epg_channel(xmltv_file, channel_id):
     json_source = get_json(EPG_URL + '/timeline/live/' + channel_id + '/watch_history_size/0/coming_up_size/50')
     for strand in json_source['body']['strands']:
+        if xbmc.Monitor().abortRequested(): break
         if strand['id'] == 'now_playing' or strand['id'] == 'coming_up':
             for program in strand['programs']:
                 icon = ""
@@ -312,11 +314,11 @@ if __name__ == '__main__':
     while not monitor.abortRequested():
         # Sleep/wait for abort for 10 minutes
         if monitor.waitForAbort(600):
-            if last_update < datetime.now() - timedelta(hours=1):
-                check_files()
-                last_update = datetime.now()
-
             # Abort was requested while waiting. We should exit
             break
+        if last_update < datetime.now() - timedelta(hours=1):
+            check_files()
+            last_update = datetime.now()
+
         xbmc.log("hello addon!"+last_update.strftime('%m/%d/%Y %H:%M:%S'), level=xbmc.LOGNOTICE)
 
