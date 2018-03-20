@@ -10,7 +10,7 @@ UA_ANDROID_TV = 'Mozilla/5.0 (Linux; Android 6.0.1; Hub Build/MHC19J; wv) AppleW
 CHANNEL_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/channel'
 EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
 SHOW_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/airing/'
-VERIFY = False
+VERIFY = True
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 if not xbmc.getCondVisibility('System.HasAddon(pvr.iptvsimple)'):
@@ -60,13 +60,14 @@ def build_playlist():
                         logo = image['src']
                         logo = logo.encode('utf-8')
                         break
-
+            """
             xbmc.log('port '+webserver_port)
             xbmc.log('usr '+webserver_usr)
             xbmc.log('pwd '+webserver_pwd)
+            """
 
             url = 'http://'
-            if webserver_usr and webserver_pwd: url += webserver_usr + ':' + webserver_pwd + '@'
+            if webserver_usr and webserver_pwd: url += urllib.quote_plus(webserver_usr) + ':' + urllib.quote_plus(webserver_pwd) + '@'
             url += 'localhost:' + webserver_port
             url += '/jsonrpc?request='
             url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.module.psvueplay","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
@@ -87,15 +88,25 @@ def build_playlist():
     channel_ids_str = ",".join(channel_ids)
     PS_VUE_ADDON.setSetting(id='channelIDs', value=channel_ids_str)
     PS_VUE_ADDON.setSetting(id='channelNamesXML', value=channel_names_str)
+
     if IPTV_SIMPLE_ADDON.getSetting('m3uPathType') != '0':
         IPTV_SIMPLE_ADDON.setSetting(id='m3uPathType', value='0')
+        xbmc.executebuiltin('Dialog.Close(all,true)')
+
     if IPTV_SIMPLE_ADDON.getSetting('m3uPath') != os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"):
         IPTV_SIMPLE_ADDON.setSetting(id='m3uPath', value=os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"))
+        xbmc.executebuiltin('Dialog.Close(all,true)')
+
     if IPTV_SIMPLE_ADDON.getSetting('logoFromEpg') != '1':
         IPTV_SIMPLE_ADDON.setSetting(id='logoFromEpg', value='1')
+        xbmc.executebuiltin('Dialog.Close(all,true)')
 
-    dialog = xbmcgui.Dialog()
-    dialog.notification('PS Vue Playlist', 'The playlist has finished building', xbmcgui.NOTIFICATION_INFO, 3000, False)
+    if IPTV_SIMPLE_ADDON.getSetting('logoPathType') != '1':
+        IPTV_SIMPLE_ADDON.setSetting(id='logoPathType', value='1')
+        xbmc.executebuiltin('Dialog.Close(all,true)')
+
+    # dialog = xbmcgui.Dialog()
+    # dialog.notification('PS Vue Playlist', 'The playlist has finished building', xbmcgui.NOTIFICATION_INFO, 3000, False)
 
 
 def build_epg():
@@ -128,10 +139,14 @@ def build_epg():
     xmltv_file.close()
     progress.update(100, 'Done!')
     progress.close()
+
     if IPTV_SIMPLE_ADDON.getSetting('epgPathType') != '0':
         IPTV_SIMPLE_ADDON.setSetting(id='epgPathType', value='0')
+        xbmc.executebuiltin('Dialog.Close(all,true)')
+
     if IPTV_SIMPLE_ADDON.getSetting(id='epgPath') != os.path.join(ADDON_PATH_PROFILE, "epg.xml"):
         IPTV_SIMPLE_ADDON.setSetting(id='epgPath', value=os.path.join(ADDON_PATH_PROFILE, "epg.xml"))
+        xbmc.executebuiltin('Dialog.Close(all,true)')
 
 
 def build_epg_channel(xmltv_file, channel_id):
@@ -320,5 +335,5 @@ if __name__ == '__main__':
             check_files()
             last_update = datetime.now()
 
-        xbmc.log("hello addon!"+last_update.strftime('%m/%d/%Y %H:%M:%S'), level=xbmc.LOGNOTICE)
+        xbmc.log("PS Vue EPG Update Check. Last Update: "+last_update.strftime('%m/%d/%Y %H:%M:%S'), level=xbmc.LOGNOTICE)
 
