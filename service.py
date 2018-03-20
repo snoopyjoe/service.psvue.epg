@@ -2,6 +2,7 @@ import cookielib
 import os
 import requests, urllib
 from datetime import datetime, timedelta
+import time
 import xbmc, xbmcplugin, xbmcgui, xbmcaddon, xbmcvfs
 
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
@@ -10,7 +11,7 @@ UA_ANDROID_TV = 'Mozilla/5.0 (Linux; Android 6.0.1; Hub Build/MHC19J; wv) AppleW
 CHANNEL_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/channel'
 EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
 SHOW_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/airing/'
-VERIFY = True
+VERIFY = False
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 if not xbmc.getCondVisibility('System.HasAddon(pvr.iptvsimple)'):
@@ -164,6 +165,7 @@ def build_epg_channel(xmltv_file, channel_id):
 
                 title = program['title']
                 title = title.encode('utf-8')
+                xbmc.log(title)
                 sub_title = ''
                 if 'title_sub' in program:
                     sub_title = program['title_sub']
@@ -172,9 +174,11 @@ def build_epg_channel(xmltv_file, channel_id):
                 if 'synopsis' in program:
                     desc = program['synopsis']
                     desc = desc.encode('utf-8')
-                start_time = datetime.strptime(program['airing_date'], DATE_FORMAT)
+                #start_time = datetime.strptime(program['airing_date'], DATE_FORMAT)
+                start_time = string_to_date(program['airing_date'], DATE_FORMAT)
                 start_time = start_time.strftime("%Y%m%d%H%M%S")
-                stop_time = datetime.strptime(program['expiration_date'], DATE_FORMAT)
+                #stop_time = datetime.strptime(program['expiration_date'], DATE_FORMAT)
+                stop_time = string_to_date(program['expiration_date'], DATE_FORMAT)
                 stop_time = stop_time.strftime("%Y%m%d%H%M%S")
 
                 xmltv_file.write('<programme start="' + start_time + '" stop="' + stop_time + '"  channel="' + channel_id + '">\n')
@@ -310,6 +314,15 @@ def find(source, start_str, end_str):
         return source[start + len(start_str):end]
     else:
         return ''
+
+
+def string_to_date(string, date_format):
+    try:
+        date = datetime.strptime(str(string), date_format)
+    except TypeError:
+        date = datetime(*(time.strptime(str(string), date_format)[0:6]))
+
+    return date
 
 
 def check_files():
