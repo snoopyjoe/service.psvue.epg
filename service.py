@@ -71,7 +71,7 @@ def build_playlist():
             if webserver_usr and webserver_pwd: url += urllib.quote_plus(webserver_usr) + ':' + urllib.quote_plus(webserver_pwd) + '@'
             url += 'localhost:' + webserver_port
             url += '/jsonrpc?request='
-            url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.module.psvueplay","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
+            url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.play","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
 
             m3u_file.write("\n")
             channel_info = '#EXTINF:-1 tvg-id="'+channel_id+'" tvg-name="' + title + '"'
@@ -90,21 +90,11 @@ def build_playlist():
     PS_VUE_ADDON.setSetting(id='channelIDs', value=channel_ids_str)
     PS_VUE_ADDON.setSetting(id='channelNamesXML', value=channel_names_str)
 
-    if IPTV_SIMPLE_ADDON.getSetting('m3uPathType') != '0':
-        IPTV_SIMPLE_ADDON.setSetting(id='m3uPathType', value='0')
-        xbmc.executebuiltin('Dialog.Close(all,true)')
-
-    if IPTV_SIMPLE_ADDON.getSetting('m3uPath') != os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"):
-        IPTV_SIMPLE_ADDON.setSetting(id='m3uPath', value=os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"))
-        xbmc.executebuiltin('Dialog.Close(all,true)')
-
-    if IPTV_SIMPLE_ADDON.getSetting('logoFromEpg') != '1':
-        IPTV_SIMPLE_ADDON.setSetting(id='logoFromEpg', value='1')
-        xbmc.executebuiltin('Dialog.Close(all,true)')
-
-    if IPTV_SIMPLE_ADDON.getSetting('logoPathType') != '1':
-        IPTV_SIMPLE_ADDON.setSetting(id='logoPathType', value='1')
-        xbmc.executebuiltin('Dialog.Close(all,true)')
+    check_iptv_setting('epgTSOverride', 'true')
+    check_iptv_setting('m3uPathType', '0')
+    check_iptv_setting('m3uPath', os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"))
+    check_iptv_setting('logoFromEpg', '1')
+    check_iptv_setting('logoPathType', '1')
 
     # dialog = xbmcgui.Dialog()
     # dialog.notification('PS Vue Playlist', 'The playlist has finished building', xbmcgui.NOTIFICATION_INFO, 3000, False)
@@ -141,13 +131,8 @@ def build_epg():
     progress.update(100, 'Done!')
     progress.close()
 
-    if IPTV_SIMPLE_ADDON.getSetting('epgPathType') != '0':
-        IPTV_SIMPLE_ADDON.setSetting(id='epgPathType', value='0')
-        xbmc.executebuiltin('Dialog.Close(all,true)')
-
-    if IPTV_SIMPLE_ADDON.getSetting(id='epgPath') != os.path.join(ADDON_PATH_PROFILE, "epg.xml"):
-        IPTV_SIMPLE_ADDON.setSetting(id='epgPath', value=os.path.join(ADDON_PATH_PROFILE, "epg.xml"))
-        xbmc.executebuiltin('Dialog.Close(all,true)')
+    check_iptv_setting('epgPathType', '0')
+    check_iptv_setting('epgPath', os.path.join(ADDON_PATH_PROFILE, "epg.xml"))
 
 
 def build_epg_channel(xmltv_file, channel_id):
@@ -323,6 +308,13 @@ def string_to_date(string, date_format):
         date = datetime(*(time.strptime(str(string), date_format)[0:6]))
 
     return date
+
+
+def check_iptv_setting(id, value):
+    if IPTV_SIMPLE_ADDON.getSetting(id) != value:
+        IPTV_SIMPLE_ADDON.setSetting(id=id, value=value)
+        xbmc.Monitor().waitForAbort(3)
+        xbmc.executebuiltin('Dialog.Close(all,true)')
 
 
 def check_files():
