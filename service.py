@@ -313,18 +313,14 @@ def string_to_date(string, date_format):
 def check_iptv_setting(id, value):
     if IPTV_SIMPLE_ADDON.getSetting(id) != value:
         IPTV_SIMPLE_ADDON.setSetting(id=id, value=value)
-        xbmc.Monitor().waitForAbort(3)
-        xbmc.executebuiltin('Dialog.Close(all,true)')
+        # Doesn't seem to have any effect on the IPTV Needs to restart dialog
+        #xbmc.Monitor().waitForAbort(3)
+        #xbmc.executebuiltin('Dialog.Close(all,true)')
 
 
 def check_files():
     build_playlist()
     build_epg()
-
-    # Reload pvr
-    # This causes android to crash??
-    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":8,"params":{"addonid":"pvr.iptvsimple","enabled":false}}')
-    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","id":8,"params":{"addonid":"pvr.iptvsimple","enabled":true}}')
 
 
 if __name__ == '__main__':
