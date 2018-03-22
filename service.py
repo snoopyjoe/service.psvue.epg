@@ -1,9 +1,10 @@
 import cookielib
-import os
+import os, re
 import requests, urllib
 from datetime import datetime, timedelta
 import time
 import xbmc, xbmcplugin, xbmcgui, xbmcaddon, xbmcvfs
+import cherrypy
 
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
 ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
@@ -13,6 +14,7 @@ EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
 SHOW_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/airing/'
 VERIFY = False
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+KODI_VERSION = float(re.findall(r'\d{2}\.\d{1}', xbmc.getInfoLabel("System.BuildVersion"))[0])
 
 if not xbmc.getCondVisibility('System.HasAddon(pvr.iptvsimple)'):
     dialog = xbmcgui.Dialog()
@@ -23,14 +25,7 @@ IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
 
 
 def build_playlist():
-    settings_file = xbmcvfs.File(os.path.join("special://userdata","guisettings.xml"),"r")
-    gui_settings = settings_file.read()
-
-    if find(gui_settings,'<webserver default="true">','</webserver>') == 'false':
-        dialog = xbmcgui.Dialog()
-        dialog.ok('PS Vue EPG','Please enable web server:\n(Settings > Services > Control > Allow remote control via HTTP)')
-        sys.exit()
-
+    """
     webserver_usr = find(gui_settings,'<webserverusername default="true">','</webserverusername>')
     if not webserver_usr: webserver_usr = find(gui_settings,'<webserverusername>','</webserverusername>')
 
@@ -39,6 +34,8 @@ def build_playlist():
 
     webserver_port = find(gui_settings, '<webserverport default="true">', '</webserverport>')
     if not webserver_port: webserver_port = find(gui_settings, '<webserverport>', '</webserverport>')
+    """
+    webserver_usr, webserver_pwd, webserver_port = get_webserver_settings()
 
     json_source = get_json(EPG_URL + '/browse/items/channels/filter/all/sort/channeltype/offset/0/size/500')
     m3u_file = open(os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"),"w")
@@ -69,9 +66,10 @@ def build_playlist():
 
             url = 'http://'
             if webserver_usr and webserver_pwd: url += urllib.quote_plus(webserver_usr) + ':' + urllib.quote_plus(webserver_pwd) + '@'
-            url += 'localhost:' + webserver_port
-            url += '/jsonrpc?request='
-            url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.play","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
+            #url += 'localhost:' + webserver_port
+            #url += '/jsonrpc?request='
+            #url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.play","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
+            url = 'http://localhost:54321?params='+urllib.quote(CHANNEL_URL + '/' + channel_id)
 
             m3u_file.write("\n")
             channel_info = '#EXTINF:-1 tvg-id="'+channel_id+'" tvg-name="' + title + '"'
@@ -291,6 +289,58 @@ def load_cookies():
     return cj
 
 
+def epg_play_stream(url):
+    headers = {
+        'Accept': '*/*',
+        'Content-type': 'application/x-www-form-urlencoded',
+        'Origin': 'https://vue.playstation.com',
+        'Accept-Language': 'en-US,en;q=0.8',
+        'Referer': 'https://vue.playstation.com/watch/live',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'User-Agent': UA_ANDROID_TV,
+        'Connection': 'Keep-Alive',
+        'Host': 'media-framework.totsuko.tv',
+        'reqPayload': PS_VUE_ADDON.getSetting(id='EPGreqPayload'),
+        'X-Requested-With': 'com.snei.vue.android'
+    }
+
+    r = requests.get(url, headers=headers, cookies=load_cookies(), verify=VERIFY)
+    json_source = r.json()
+    stream_url = json_source['body']['video']
+    headers = '|User-Agent='
+    headers += 'Adobe Primetime/1.4 Dalvik/2.1.0 (Linux; U; Android 6.0.1 Build/MOB31H)'
+    headers += '&Cookie=reqPayload=' + urllib.quote('"' + PS_VUE_ADDON.getSetting(id='EPGreqPayload') + '"')
+    listitem = xbmcgui.ListItem()
+    listitem.setMimeType("application/x-mpegURL")
+    # Checks to see if VideoPlayer info is already saved. If not then info is loaded from stream link
+    """
+    if xbmc.getCondVisibility('String.IsEmpty(ListItem.Title)'):
+        # listitem = xbmcgui.ListItem(title, plot, thumbnailImage=icon)
+        # listitem.setInfo(type="Video", infoLabels={'title': title, 'plot': plot})
+        listitem.setMimeType("application/x-mpegURL")
+    else:
+        listitem = xbmcgui.ListItem()
+        listitem.setMimeType("application/x-mpegURL")
+    """
+
+    inputstreamCOND = str(json_source['body']['dai_method']) # Checks whether stream method is "mlbam" or "freewheel" or "none"
+
+    if inputstreamCOND != 'freewheel' and xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)'):#Inputstream doesn't seem to work when dai method is "freewheel"
+        stream_url = json_source['body']['video_alt'] # Uses alternate Sony stream to prevent Inputstream adaptive from crashing
+        listitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
+        listitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        listitem.setProperty('inputstream.adaptive.stream_headers', headers)
+        listitem.setProperty('inputstream.adaptive.license_key', headers)
+    else:
+        stream_url += headers
+
+    listitem.setPath(stream_url)
+
+    # window_id = xbmcgui.getCurrentWindowId()
+    # xbmc.executebuiltin('PlayMedia('+stream_url+',True,0)')
+    xbmc.Player().play(item=stream_url+headers, listitem=listitem)
+
+
 def find(source, start_str, end_str):
     start = source.find(start_str)
     end = source.find(end_str, start + len(start_str))
@@ -318,15 +368,85 @@ def check_iptv_setting(id, value):
         #xbmc.executebuiltin('Dialog.Close(all,true)')
 
 
+def get_webserver_settings():
+    xbmc.log("KODI VERSION = "+str(KODI_VERSION))
+    settings_file = xbmcvfs.File(os.path.join("special://userdata", "guisettings.xml"), "r")
+    gui_settings = settings_file.read()
+
+    if KODI_VERSION >= 18:
+        """
+        <setting id="services.webserver">true</setting>
+        <setting id="services.webserverpassword" default="true"></setting>
+        <setting id="services.webserverport" default="true">8080</setting>
+        <setting id="services.webserverssl" default="true">false</setting>
+        <setting id="services.webserverusername"></setting>
+        """
+        if find(gui_settings, '<setting id="services.webserver">', '</setting>') == 'false':
+            dialog = xbmcgui.Dialog()
+            dialog.ok('PS Vue EPG', 'Please enable web server:\n(Settings > Services > Control > Allow remote control via HTTP)')
+            sys.exit()
+        usr = find(gui_settings, '<setting id="services.webserverusername" default="true">', '</webserverusername>')
+        if not usr: usr = find(gui_settings, '<setting id="services.webserverusername">', '</setting>')
+
+        pwd = find(gui_settings, '<setting id="services.webserverpassword" default="true">', '</setting>')
+        if not pwd: pwd = find(gui_settings, '<setting id="services.webserverpassword">', '</setting>')
+
+        port = find(gui_settings, '<setting id="services.webserverport" default="true">', '</setting>')
+        if not port: port = find(gui_settings, '<setting id="services.webserverport">', '</setting>')
+    else:
+        if find(gui_settings, '<webserver default="true">', '</webserver>') == 'false':
+            dialog = xbmcgui.Dialog()
+            dialog.ok('PS Vue EPG', 'Please enable web server:\n(Settings > Services > Control > Allow remote control via HTTP)')
+            sys.exit()
+        usr = find(gui_settings,'<webserverusername default="true">','</webserverusername>')
+        if not usr: usr = find(gui_settings,'<webserverusername>','</webserverusername>')
+
+        pwd = find(gui_settings,'<webserverpassword  default="true">','</webserverpassword>')
+        if not pwd: pwd = find(gui_settings, '<webserverpassword>', '</webserverpassword>')
+
+        port = find(gui_settings, '<webserverport default="true">', '</webserverport>')
+        if not port: port = find(gui_settings, '<webserverport>', '</webserverport>')
+
+    return usr, pwd, port
+
+
 def check_files():
     build_playlist()
     build_epg()
 
 
+class PSVueWebService(object):
+    exposed = True
+
+    @cherrypy.expose
+    def GET(self, params):
+        dialog = xbmcgui.Dialog()
+        dialog.notification('PS Vue EPG', 'Channel Request fired\n'+str(params), xbmcgui.NOTIFICATION_INFO, 5000, False)
+        #epg_play_stream(params)
+
+
 if __name__ == '__main__':
+
+    cherrypy.config.update({
+        'server.socket_host': '127.0.0.1',
+        'server.socket_port': 54321,
+        'tools.encode.on': False,
+        'request.dispatch': cherrypy.dispatch.MethodDispatcher()
+    })
+
+    cherrypy.tree.mount(PSVueWebService(), '/', {
+        '/': {
+            'server.socket_port': 54321,
+            'request.dispatch': cherrypy.dispatch.MethodDispatcher()
+        }
+    })
+
+    cherrypy.engine.start()
+
     monitor = xbmc.Monitor()
     last_update = datetime.now()
     check_files()
+
     while not monitor.abortRequested():
         # Sleep/wait for abort for 10 minutes
         if monitor.waitForAbort(600):
@@ -338,3 +458,4 @@ if __name__ == '__main__':
 
         xbmc.log("PS Vue EPG Update Check. Last Update: "+last_update.strftime('%m/%d/%Y %H:%M:%S'), level=xbmc.LOGNOTICE)
 
+    cherrypy.engine.stop()
