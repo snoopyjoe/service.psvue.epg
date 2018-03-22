@@ -422,7 +422,7 @@ class PSVueWebService(object):
     def GET(self, params):
         dialog = xbmcgui.Dialog()
         dialog.notification('PS Vue EPG', 'Channel Request fired\n'+str(params), xbmcgui.NOTIFICATION_INFO, 5000, False)
-        #epg_play_stream(params)
+        epg_play_stream(params)
 
 
 if __name__ == '__main__':
