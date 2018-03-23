@@ -25,18 +25,6 @@ IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
 
 
 def build_playlist():
-    """
-    webserver_usr = find(gui_settings,'<webserverusername default="true">','</webserverusername>')
-    if not webserver_usr: webserver_usr = find(gui_settings,'<webserverusername>','</webserverusername>')
-
-    webserver_pwd = find(gui_settings,'<webserverpassword  default="true">','</webserverpassword>')
-    if not webserver_pwd: webserver_pwd = find(gui_settings, '<webserverpassword>', '</webserverpassword>')
-
-    webserver_port = find(gui_settings, '<webserverport default="true">', '</webserverport>')
-    if not webserver_port: webserver_port = find(gui_settings, '<webserverport>', '</webserverport>')
-    """
-    webserver_usr, webserver_pwd, webserver_port = get_webserver_settings()
-
     json_source = get_json(EPG_URL + '/browse/items/channels/filter/all/sort/channeltype/offset/0/size/500')
     m3u_file = open(os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"),"w")
     m3u_file.write("#EXTM3U")
@@ -58,17 +46,6 @@ def build_playlist():
                         logo = image['src']
                         logo = logo.encode('utf-8')
                         break
-            """
-            xbmc.log('port '+webserver_port)
-            xbmc.log('usr '+webserver_usr)
-            xbmc.log('pwd '+webserver_pwd)
-            """
-
-            url = 'http://'
-            if webserver_usr and webserver_pwd: url += urllib.quote_plus(webserver_usr) + ':' + urllib.quote_plus(webserver_pwd) + '@'
-            #url += 'localhost:' + webserver_port
-            #url += '/jsonrpc?request='
-            #url += urllib.quote('{"jsonrpc":"2.0","method":"Addons.ExecuteAddon","params":{"addonid":"script.psvue.play","params":{"url":"' + CHANNEL_URL + '/' + channel_id + '"}},"id": 1}')
             url = 'http://localhost:54321?params='+urllib.quote(CHANNEL_URL + '/' + channel_id)
 
             m3u_file.write("\n")
@@ -93,9 +70,6 @@ def build_playlist():
     check_iptv_setting('m3uPath', os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"))
     check_iptv_setting('logoFromEpg', '1')
     check_iptv_setting('logoPathType', '1')
-
-    # dialog = xbmcgui.Dialog()
-    # dialog.notification('PS Vue Playlist', 'The playlist has finished building', xbmcgui.NOTIFICATION_INFO, 3000, False)
 
 
 def build_epg():
@@ -337,7 +311,7 @@ def epg_play_stream(url):
     listitem.setPath(stream_url)
 
     # window_id = xbmcgui.getCurrentWindowId()
-    # xbmc.executebuiltin('PlayMedia('+stream_url+',True,0)')
+    #xbmc.executebuiltin('PlayMedia('+stream_url+',True,0)')
     xbmc.Player().play(item=stream_url+headers, listitem=listitem)
 
 
@@ -363,56 +337,11 @@ def string_to_date(string, date_format):
 def check_iptv_setting(id, value):
     if IPTV_SIMPLE_ADDON.getSetting(id) != value:
         IPTV_SIMPLE_ADDON.setSetting(id=id, value=value)
-        # Doesn't seem to have any effect on the IPTV Needs to restart dialog
-        #xbmc.Monitor().waitForAbort(3)
-        #xbmc.executebuiltin('Dialog.Close(all,true)')
-
-
-def get_webserver_settings():
-    xbmc.log("KODI VERSION = "+str(KODI_VERSION))
-    settings_file = xbmcvfs.File(os.path.join("special://userdata", "guisettings.xml"), "r")
-    gui_settings = settings_file.read()
-
-    if KODI_VERSION >= 18:
-        """
-        <setting id="services.webserver">true</setting>
-        <setting id="services.webserverpassword" default="true"></setting>
-        <setting id="services.webserverport" default="true">8080</setting>
-        <setting id="services.webserverssl" default="true">false</setting>
-        <setting id="services.webserverusername"></setting>
-        """
-        if find(gui_settings, '<setting id="services.webserver">', '</setting>') == 'false':
-            dialog = xbmcgui.Dialog()
-            dialog.ok('PS Vue EPG', 'Please enable web server:\n(Settings > Services > Control > Allow remote control via HTTP)')
-            sys.exit()
-        usr = find(gui_settings, '<setting id="services.webserverusername" default="true">', '</webserverusername>')
-        if not usr: usr = find(gui_settings, '<setting id="services.webserverusername">', '</setting>')
-
-        pwd = find(gui_settings, '<setting id="services.webserverpassword" default="true">', '</setting>')
-        if not pwd: pwd = find(gui_settings, '<setting id="services.webserverpassword">', '</setting>')
-
-        port = find(gui_settings, '<setting id="services.webserverport" default="true">', '</setting>')
-        if not port: port = find(gui_settings, '<setting id="services.webserverport">', '</setting>')
-    else:
-        if find(gui_settings, '<webserver default="true">', '</webserver>') == 'false':
-            dialog = xbmcgui.Dialog()
-            dialog.ok('PS Vue EPG', 'Please enable web server:\n(Settings > Services > Control > Allow remote control via HTTP)')
-            sys.exit()
-        usr = find(gui_settings,'<webserverusername default="true">','</webserverusername>')
-        if not usr: usr = find(gui_settings,'<webserverusername>','</webserverusername>')
-
-        pwd = find(gui_settings,'<webserverpassword  default="true">','</webserverpassword>')
-        if not pwd: pwd = find(gui_settings, '<webserverpassword>', '</webserverpassword>')
-
-        port = find(gui_settings, '<webserverport default="true">', '</webserverport>')
-        if not port: port = find(gui_settings, '<webserverport>', '</webserverport>')
-
-    return usr, pwd, port
 
 
 def check_files():
     build_playlist()
-    build_epg()
+    #build_epg()
 
 
 class PSVueWebService(object):
@@ -420,25 +349,28 @@ class PSVueWebService(object):
 
     @cherrypy.expose
     def GET(self, params):
+        cherrypy.response.status = 302
+        cherrypy.response.headers['Connection'] = 'keep-alive'
+        cherrypy.response.headers['Content-Type'] = 'text/html'
+        # Play default mp4 to avoid playback failed dialog
+        cherrypy.response.headers['Location'] = 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4'
         dialog = xbmcgui.Dialog()
         dialog.notification('PS Vue EPG', 'Channel Request fired\n'+str(params), xbmcgui.NOTIFICATION_INFO, 5000, False)
         epg_play_stream(params)
 
 
 if __name__ == '__main__':
-
     cherrypy.config.update({
         'server.socket_host': '127.0.0.1',
         'server.socket_port': 54321,
-        'tools.encode.on': False,
-        'request.dispatch': cherrypy.dispatch.MethodDispatcher()
+        'tools.encode.on': False
     })
 
     cherrypy.tree.mount(PSVueWebService(), '/', {
         '/': {
-            'server.socket_port': 54321,
-            'request.dispatch': cherrypy.dispatch.MethodDispatcher()
-        }
+            'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
+            'response.timeout': 2
+              }
     })
 
     cherrypy.engine.start()
