@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <!--<setting type="action" label="Build Playlist" action="RunService(plugin://service.psvue.epg)" option="close" />-->
+    <setting type="number" label="Port" id="port" default="54321" />
 </settings>

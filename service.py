@@ -6,6 +6,7 @@ import time
 import xbmc, xbmcplugin, xbmcgui, xbmcaddon, xbmcvfs
 import cherrypy
 
+ADDON = xbmcaddon.Addon()
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
 ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
 UA_ANDROID_TV = 'Mozilla/5.0 (Linux; Android 6.0.1; Hub Build/MHC19J; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Safari/537.36'
@@ -46,7 +47,7 @@ def build_playlist():
                         logo = image['src']
                         logo = logo.encode('utf-8')
                         break
-            url = 'http://localhost:54321?params='+urllib.quote(CHANNEL_URL + '/' + channel_id)
+            url = 'http://localhost:54321/psvue?params='+urllib.quote(CHANNEL_URL + '/' + channel_id)
 
             m3u_file.write("\n")
             channel_info = '#EXTINF:-1 tvg-id="'+channel_id+'" tvg-name="' + title + '"'
@@ -297,9 +298,9 @@ def epg_play_stream(url):
         listitem.setMimeType("application/x-mpegURL")
     """
 
-    inputstreamCOND = str(json_source['body']['dai_method']) # Checks whether stream method is "mlbam" or "freewheel" or "none"
+    dai_method= str(json_source['body']['dai_method']) # Checks whether stream method is "mlbam" or "freewheel" or "none"
 
-    if inputstreamCOND != 'freewheel' and xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)'):#Inputstream doesn't seem to work when dai method is "freewheel"
+    if dai_method != 'freewheel' and xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)'):#Inputstream doesn't seem to work when dai method is "freewheel"
         stream_url = json_source['body']['video_alt'] # Uses alternate Sony stream to prevent Inputstream adaptive from crashing
         listitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
         listitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
@@ -341,7 +342,7 @@ def check_iptv_setting(id, value):
 
 def check_files():
     build_playlist()
-    #build_epg()
+    build_epg()
 
 
 class PSVueWebService(object):
@@ -354,23 +355,29 @@ class PSVueWebService(object):
         cherrypy.response.headers['Content-Type'] = 'text/html'
         # Play default mp4 to avoid playback failed dialog
         cherrypy.response.headers['Location'] = 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4'
-        dialog = xbmcgui.Dialog()
-        dialog.notification('PS Vue EPG', 'Channel Request fired\n'+str(params), xbmcgui.NOTIFICATION_INFO, 5000, False)
         epg_play_stream(params)
 
 
 if __name__ == '__main__':
+    if ADDON.getSetting(id='port') == '':
+        dialog = xbmcgui.Dialog()
+        dialog.notification('PS Vue EPG', 'Please enter a port number in the PS Vue EPG Build Settings', xbmcgui.NOTIFICATION_INFO, 5000, False)
+        sys.exit()
+    else:
+        port = ADDON.getSetting(id='port')
+
     cherrypy.config.update({
         'server.socket_host': '127.0.0.1',
-        'server.socket_port': 54321,
+        'server.socket_port': int(port),
         'tools.encode.on': False
     })
 
-    cherrypy.tree.mount(PSVueWebService(), '/', {
+    cherrypy.tree.mount(PSVueWebService(), '/psvue', {
         '/': {
             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
-            'response.timeout': 2
-              }
+            'tools.sessions.on': True,
+            'tools.response_headers.on': True
+            }
     })
 
     cherrypy.engine.start()
