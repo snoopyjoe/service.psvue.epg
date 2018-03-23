@@ -6,6 +6,7 @@ import time
 import xbmc, xbmcplugin, xbmcgui, xbmcaddon, xbmcvfs
 import cherrypy
 
+
 ADDON = xbmcaddon.Addon()
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
 ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
@@ -13,9 +14,9 @@ UA_ANDROID_TV = 'Mozilla/5.0 (Linux; Android 6.0.1; Hub Build/MHC19J; wv) AppleW
 CHANNEL_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/channel'
 EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
 SHOW_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/airing/'
-VERIFY = False
+VERIFY = True
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-KODI_VERSION = float(re.findall(r'\d{2}\.\d{1}', xbmc.getInfoLabel("System.BuildVersion"))[0])
+
 
 if not xbmc.getCondVisibility('System.HasAddon(pvr.iptvsimple)'):
     dialog = xbmcgui.Dialog()
@@ -298,7 +299,7 @@ def epg_play_stream(url):
         listitem.setMimeType("application/x-mpegURL")
     """
 
-    dai_method= str(json_source['body']['dai_method']) # Checks whether stream method is "mlbam" or "freewheel" or "none"
+    dai_method = str(json_source['body']['dai_method']) # Checks whether stream method is "mlbam" or "freewheel" or "none"
 
     if dai_method != 'freewheel' and xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)'):#Inputstream doesn't seem to work when dai method is "freewheel"
         stream_url = json_source['body']['video_alt'] # Uses alternate Sony stream to prevent Inputstream adaptive from crashing
@@ -310,9 +311,6 @@ def epg_play_stream(url):
         stream_url += headers
 
     listitem.setPath(stream_url)
-
-    # window_id = xbmcgui.getCurrentWindowId()
-    #xbmc.executebuiltin('PlayMedia('+stream_url+',True,0)')
     xbmc.Player().play(item=stream_url+headers, listitem=listitem)
 
 
