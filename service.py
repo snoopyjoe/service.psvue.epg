@@ -387,7 +387,6 @@ if __name__ == '__main__':
     while not monitor.abortRequested():
         # Sleep/wait for abort for 10 minutes
         if monitor.waitForAbort(600):
-            # Abort was requested while waiting. We should exit
             break
         if last_update < datetime.now() - timedelta(hours=1):
             check_files()
