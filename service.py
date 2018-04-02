@@ -299,10 +299,7 @@ def epg_play_stream(url):
         listitem.setMimeType("application/x-mpegURL")
     """
 
-    dai_method = str(json_source['body']['dai_method']) # Checks whether stream method is "mlbam" or "freewheel" or "none"
-
-    if dai_method != 'freewheel' and xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)'):#Inputstream doesn't seem to work when dai method is "freewheel"
-        stream_url = json_source['body']['video_alt'] # Uses alternate Sony stream to prevent Inputstream adaptive from crashing
+    if xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)'):
         listitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
         listitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
         listitem.setProperty('inputstream.adaptive.stream_headers', headers)
