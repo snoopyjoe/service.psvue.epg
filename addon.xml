@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="service.psvue.epg" name="PS Vue EPG Build Service" version="2018.3.23" provider-name="eracknaphobia">
+<addon id="service.psvue.epg" name="PS Vue EPG Build Service" version="2018.4.3" provider-name="eracknaphobia">
   <requires>
     <import addon="xbmc.python" version="2.25.0"/>
     <import addon="script.module.requests" version="2.9.1"/>
@@ -9,5 +9,8 @@
   <extension point="xbmc.addon.metadata">
     <platform>all</platform>
     <summary lang="en">PS Vue EPG Build Service</summary>
+    <news>
+- Fix for Windows hanging on close
+    </news>
   </extension>
 </addon>
