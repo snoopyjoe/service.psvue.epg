@@ -319,7 +319,7 @@ class MainService:
         self.psvuewebservice = PSVueWebService()
         self.psvuewebservice.start()
         last_update = datetime.now()
-        #check_files()
+        check_files()
         xbmc.log("PS Vue EPG Update Check. Last Update: "+last_update.strftime('%m/%d/%Y %H:%M:%S'), level=xbmc.LOGNOTICE)
         self.main_loop()
     
