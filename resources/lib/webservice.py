@@ -1,11 +1,11 @@
 import threading
-import thread
 import cherrypy
 import xbmc, xbmcgui, xbmcaddon
-import requests, urllib
+import requests
 import cookielib
 import os
 import sys
+import m3u8
 
 ADDON = xbmcaddon.Addon()
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
@@ -40,66 +40,39 @@ def epg_play_stream(url):
     }
 
     r = requests.get(url, headers=headers, cookies=load_cookies(), verify=VERIFY)
-    json_source = r.json()
-    stream_url = json_source['body']['video']
-    headers = '|User-Agent='
-    headers += 'Adobe Primetime/1.4 Dalvik/2.1.0 (Linux; U; Android 6.0.1 Build/MOB31H)'
-    headers += '&Cookie=reqPayload=' + urllib.quote('"' + PS_VUE_ADDON.getSetting(id='EPGreqPayload') + '"')
-    listitem = xbmcgui.ListItem()
-    listitem.setMimeType("application/x-mpegURL")
-    # Checks to see if VideoPlayer info is already saved. If not then info is loaded from stream link
+    stream_url = r.json()['body']['video']
 
-    """
+    r = requests.get(stream_url, headers=headers)
+    variant_m3u8 = m3u8.loads(r.text)
+    bandwidth = 0
+    best_stream = ''
+    for playlist in variant_m3u8.playlists:
+        xbmc.log(str(playlist.stream_info.bandwidth))
+        xbmc.log(playlist.uri)
+        if playlist.stream_info.bandwidth > bandwidth:
+            bandwidth = playlist.stream_info.bandwidth
+            best_stream = playlist.uri
 
-    if xbmc.getCondVisibility('String.IsEmpty(ListItem.Title)'):
+    if 'http' not in best_stream and best_stream != '':
+        stream_url = stream_url.replace(stream_url.rsplit('/', 1)[-1], best_stream)
 
-        # listitem = xbmcgui.ListItem(title, plot, thumbnailImage=icon)
-
-        # listitem.setInfo(type="Video", infoLabels={'title': title, 'plot': plot})
-
-        listitem.setMimeType("application/x-mpegURL")
-
-    else:
-
-        listitem = xbmcgui.ListItem()
-
-        listitem.setMimeType("application/x-mpegURL")
-
-    """
-
-    if xbmc.getCondVisibility('System.HasAddon(inputstream.adaptive)'):
-        listitem.setProperty('inputstreamaddon', 'inputstream.adaptive')
-        listitem.setProperty('inputstream.adaptive.manifest_type', 'hls')
-        listitem.setProperty('inputstream.adaptive.stream_headers', headers)
-        listitem.setProperty('inputstream.adaptive.license_key', headers)
-
-    else:
-        stream_url += headers
-
-    listitem.setPath(stream_url)
-    xbmc.Player().play(item=stream_url+headers, listitem=listitem)
-
-
+    return stream_url
 
 
 class Root(object):
-
     exposed = True
 
     @cherrypy.expose
     def GET(self, params):
-        cherrypy.response.status = 302
-        cherrypy.response.headers['Connection'] = 'keep-alive'
-        cherrypy.response.headers['Content-Type'] = 'text/html'
-        # Play default mp4 to avoid playback failed dialog
-        cherrypy.response.headers['Location'] = 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4'
-        epg_play_stream(params)
-
+        cherrypy.response.cookie['reqPayload'] = PS_VUE_ADDON.getSetting(id='EPGreqPayload')
+        cherrypy.response.cookie['reqPayload']['Domain'] = 'totsuko.tv'
+        cherrypy.response.cookie['reqPayload']['Path'] = '/'
+        stream_url = epg_play_stream(params)
+        raise cherrypy.HTTPRedirect(stream_url)
 
 
 class PSVueWebService(threading.Thread):
     __root = None
-
 
     def __init__(self):
         self.__root = Root()
@@ -111,9 +84,6 @@ class PSVueWebService(threading.Thread):
         else:
             port = ADDON.getSetting(id='port')
 
-
-
-
         cherrypy.config.update({
             'server.socket_host': '127.0.0.1',
             'server.socket_port': int(port),
@@ -122,15 +92,13 @@ class PSVueWebService(threading.Thread):
         })
         threading.Thread.__init__(self)
 
-
-
     def run(self):
         cherrypy.tree.mount(Root(), '/psvue', {
         '/': {
 
             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
 
-            'tools.sessions.on': True,
+            'tools.sessions.on': False,
 
             'tools.response_headers.on': True
 
@@ -138,8 +106,6 @@ class PSVueWebService(threading.Thread):
 
         })
         cherrypy.engine.start()
-
-
 
     def stop(self):
         cherrypy.engine.exit()

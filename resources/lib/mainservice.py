@@ -1,10 +1,8 @@
 from webservice import PSVueWebService
-import subprocess
 import sys
-import xbmcvfs
 import time
 import cookielib
-import os, re
+import os
 import requests, urllib
 from datetime import datetime, timedelta
 import xbmc, xbmcplugin, xbmcgui, xbmcaddon
@@ -20,14 +18,12 @@ VERIFY = True
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
-
 if not xbmc.getCondVisibility('System.HasAddon(pvr.iptvsimple)'):
     dialog = xbmcgui.Dialog()
     dialog.notification('PS Vue EPG', 'Please enable PVR IPTV Simple Client', xbmcgui.NOTIFICATION_INFO, 5000, False)
     sys.exit()
 
 IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
-
 
 
 def build_playlist():
@@ -47,13 +43,14 @@ def build_playlist():
             logo = None
             for image in channel['urls']:
                 if 'width' in image:
-                    xbmc.log(str(image['width']))
                     if image['width'] == 600 or image['width'] == 440:
                         logo = image['src']
                         logo = logo.encode('utf-8')
                         break
-            url = 'http://localhost:54321/psvue?params='+urllib.quote(CHANNEL_URL + '/' + channel_id)
-
+            url = 'http://localhost:' + ADDON.getSetting(id='port')
+            url += '/psvue?params='+urllib.quote(CHANNEL_URL + '/' + channel_id)
+            url += '|User-Agent='
+            url += urllib.quote('Adobe Primetime/1.4 Dalvik/2.1.0 (Linux; U; Android 6.0.1 Build/MOB31H)')
 
             m3u_file.write("\n")
             channel_info = '#EXTINF:-1 tvg-id="'+channel_id+'" tvg-name="' + title + '"'
@@ -78,9 +75,6 @@ def build_playlist():
     check_iptv_setting('m3uPath', os.path.join(ADDON_PATH_PROFILE, "playlist.m3u"))
     check_iptv_setting('logoFromEpg', '1')
     check_iptv_setting('logoPathType', '1')
-
-
-
 
 
 def build_epg():
@@ -308,9 +302,7 @@ def check_files():
     build_epg()
 
 
-
 class MainService:
-
     monitor = None
     last_update = None
 
