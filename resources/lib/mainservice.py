@@ -238,7 +238,6 @@ def airings():
     """
 
 
-
 def get_json(url):
     headers = {
         'Accept': '*/*',
@@ -299,7 +298,7 @@ def check_iptv_setting(id, value):
 
 def check_files():
     build_playlist()
-    if ADDON.getSetting(id='port') == 'true':
+    if ADDON.getSetting(id='build_epg') == 'true':
         build_epg()
 
 
@@ -311,9 +310,9 @@ class MainService:
         self.monitor = xbmc.Monitor()
         self.psvuewebservice = PSVueWebService()
         self.psvuewebservice.start()
-        last_update = datetime.now()
+        self.last_update = datetime.now()
         check_files()
-        xbmc.log("PS Vue EPG Update Check. Last Update: "+last_update.strftime('%m/%d/%Y %H:%M:%S'), level=xbmc.LOGNOTICE)
+        xbmc.log("PS Vue EPG Update Check. Last Update: "+self.last_update.strftime('%m/%d/%Y %H:%M:%S'), level=xbmc.LOGNOTICE)
         self.main_loop()
     
     def main_loop(self):
@@ -322,11 +321,11 @@ class MainService:
             if self.monitor.waitForAbort(600):
             # Abort was requested while waiting. We should exit
                 break
-            if self.last_update < datetime.now() - timedelta(hours=1):
+            if self.last_update is None or self.last_update < datetime.now() - timedelta(hours=1):
                 check_files()
                 self.last_update = datetime.now()
 
-            xbmc.log("PS Vue EPG Update Check. Last Update: "+last_update.strftime('%m/%d/%Y %H:%M:%S'), level=xbmc.LOGNOTICE)
+            xbmc.log("PS Vue EPG Update Check. Last Update: "+self.last_update.strftime('%m/%d/%Y %H:%M:%S'), level=xbmc.LOGNOTICE)
         
         self.close()
     
