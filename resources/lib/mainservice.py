@@ -299,7 +299,8 @@ def check_iptv_setting(id, value):
 
 def check_files():
     build_playlist()
-    build_epg()
+    if ADDON.getSetting(id='port') == 'true':
+        build_epg()
 
 
 class MainService:
