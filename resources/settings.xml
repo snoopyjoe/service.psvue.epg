@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <setting type="number" label="Port" id="port" default="54321" />
-    <setting id='build_epg' type='bool' label='Build EPG XML file' default='true'/>
+    <setting id="port" type="number" label="Port" default="54321" />
+    <setting id="build_epg" type="bool" label="Build EPG XML file" default="true"/>
+    <setting id="epg_days" type="number" label="EPG Days" default="2"/>
 </settings>
