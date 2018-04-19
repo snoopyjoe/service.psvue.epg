@@ -44,8 +44,7 @@ class BuildGuide(threading.Thread):
                 thread_alive = False
                 if self.guide_thread_2.isAlive() or self.guide_thread_3.isAlive() or self.guide_thread_4.isAlive():
                     thread_alive = True
-                    if VERBOSE:
-                        xbmc.log('BuildGuide: Active threads remain, waiting for finish')
+                    xbmc.log('BuildGuide: Active threads remain, waiting for finish')
 
                 if self.monitor.waitForAbort(5):
                     break
@@ -159,8 +158,6 @@ class BuildGuide(threading.Thread):
         return start_time, stop_time, channel_id, title, title_sub, desc, icon, genre
 
     def stop(self):
-        if VERBOSE:
-            xbmc.log('BuildGuide: Stop triggered....')
-
+        xbmc.log('BuildGuide: Stop triggered....')
         self.keep_running = False
         self.join(0)

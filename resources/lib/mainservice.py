@@ -4,14 +4,6 @@ from guideservice import BuildGuide
 from webservice import PSVueWebService
 
 
-if not xbmc.getCondVisibility('System.HasAddon(pvr.iptvsimple)'):
-    dialog = xbmcgui.Dialog()
-    dialog.notification('PS Vue EPG', 'Please enable PVR IPTV Simple Client', xbmcgui.NOTIFICATION_INFO, 5000, False)
-    sys.exit()
-
-IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
-
-
 class MainService:
     monitor = None
     last_update = None
@@ -27,14 +19,14 @@ class MainService:
         self.guideservice = BuildGuide()
         self.guideservice.start()
 
-        self.last_update = datetime.now()
-        #check_files()
         self.db = Database()
         self.db.set_db_channels(get_channel_list())
         build_playlist(self.db.get_db_channels())
 
         xbmc.log("PS Vue EPG Update Check. Last Update: " + self.last_update.strftime('%m/%d/%Y %H:%M:%S'),
                  level=xbmc.LOGNOTICE)
+
+        self.last_update = datetime.now()
         self.main_loop()
 
     def main_loop(self):

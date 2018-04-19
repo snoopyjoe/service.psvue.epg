@@ -9,6 +9,14 @@ import urllib
 import xbmc, xbmcgui, xbmcaddon
 import _strptime
 
+
+if not xbmc.getCondVisibility('System.HasAddon(pvr.iptvsimple)'):
+    dialog = xbmcgui.Dialog()
+    dialog.notification('PS Vue EPG', 'Please enable PVR IPTV Simple Client', xbmcgui.NOTIFICATION_INFO, 5000, False)
+    sys.exit()
+
+IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
+
 ADDON = xbmcaddon.Addon()
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
 ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
@@ -18,11 +26,8 @@ CHANNEL_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/str
 EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
 SHOW_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/airing/'
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
 SAVE_LOCATION = ADDON_PATH_PROFILE
-
-VERBOSE = True
-VERIFY = False
+VERIFY = True
 
 
 def get_json(url):
