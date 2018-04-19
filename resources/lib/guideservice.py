@@ -26,33 +26,31 @@ class BuildGuide(threading.Thread):
             xbmc.log('BuildGuide: Looping through guide days....')
 
             # Build main guide longer w/ less info
-            self.guide_thread_1 = threading.Thread(name='GuideThread', target=self.long_guide())
+            self.guide_thread_1 = threading.Thread(name='GuideThread 1', target=self.long_guide())
 
             while self.guide_thread_1.isAlive():
-                xbmc.log('BuildGuide: Active threads remain, waiting 5 seconds')
-                if self.monitor.waitForAbort(5):
-                    break
+                xbmc.log('BuildGuide: Main guide thread active, waiting for finish')
 
             # Build short guide with more info
             channel_ids = PS_VUE_ADDON.getSetting('channelIDs').split(',')
             third = int(math.ceil(len(channel_ids) / 3))
-            self.guide_thread_2 = threading.Thread(name='GuideThread', target=self.short_guide(channel_ids[:third]))
-            self.guide_thread_3 = threading.Thread(name='GuideThread', target=self.short_guide(channel_ids[third:third + third]))
-            self.guide_thread_4 = threading.Thread(name='GuideThread', target=self.short_guide(channel_ids[third + third:]))
+            self.guide_thread_2 = threading.Thread(name='GuideThread 2', target=self.short_guide(channel_ids[:third]))
+            self.guide_thread_3 = threading.Thread(name='GuideThread 3', target=self.short_guide(channel_ids[third:third + third]))
+            self.guide_thread_4 = threading.Thread(name='GuideThread 4', target=self.short_guide(channel_ids[third + third:]))
 
-            xbmc.log('BuildChannelGuide: before loop')
+            xbmc.log('BuildGuide: before loop')
             thread_alive = True
             while thread_alive:
                 thread_alive = False
                 if self.guide_thread_2.isAlive() or self.guide_thread_3.isAlive() or self.guide_thread_4.isAlive():
                     thread_alive = True
                     if VERBOSE:
-                        xbmc.log('BuildChannelGuide: Active threads remain, waiting 5 seconds')
+                        xbmc.log('BuildGuide: Active threads remain, waiting for finish')
 
                 if self.monitor.waitForAbort(5):
                     break
 
-            xbmc.log('BuildChannelGuide: after loop')
+            xbmc.log('BuildGuide: after loop')
             self.db.clean_db_epg()
             self.db.build_epg_xml()
             if first_time_thru:
@@ -102,6 +100,7 @@ class BuildGuide(threading.Thread):
             self.db.update_epg_info(programs_list)
 
     def short_guide(self, channel_ids):
+        xbmc.log('BuildGuide: Thread started...')
         programs_list = []
         for channel in channel_ids:
             json_source = get_json(EPG_URL + '/timeline/live/' + channel + '/watch_history_size/0/coming_up_size/50')

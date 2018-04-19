@@ -7,7 +7,7 @@ import requests
 import sys
 import urllib
 import xbmc, xbmcgui, xbmcaddon
-
+import _strptime
 
 ADDON = xbmcaddon.Addon()
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
