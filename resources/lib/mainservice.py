@@ -23,16 +23,13 @@ class MainService:
         self.db.set_db_channels(get_channel_list())
         build_playlist(self.db.get_db_channels())
 
-        xbmc.log("PS Vue EPG Update Check. Last Update: " + self.last_update.strftime('%m/%d/%Y %H:%M:%S'),
-                 level=xbmc.LOGNOTICE)
-
         self.last_update = datetime.now()
         self.main_loop()
 
     def main_loop(self):
         while not self.monitor.abortRequested():
-            # Sleep/wait for abort for 10 minutes
-            if self.monitor.waitForAbort(600):
+            # Sleep/wait for abort for 1 hour
+            if self.monitor.waitForAbort(3600):
                 # Abort was requested while waiting. We should exit
                 break
             if self.last_update < datetime.now() - timedelta(days=1):

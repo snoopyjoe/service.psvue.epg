@@ -15,25 +15,25 @@ class Database():
 
         db_connection = sqlite3.connect(self.db_path)
 
-        sql = 'create table if not exists epg ('
-        sql += 'StartTime integer,'
-        sql += 'EndTime integer,'
-        sql += 'Channel integer,'
-        sql += 'Title text,'
-        sql += 'TitleSub text,'
-        sql += 'Desc text,'
-        sql += 'Icon text,'
-        sql += 'Genre text,'
-        sql += 'PRIMARY KEY (StartTime, EndTime, Channel)'
-        sql += ')'
+        sql = 'create table if not exists epg (' \
+            'StartTime integer,' \
+            'EndTime integer,' \
+            'Channel integer,' \
+            'Title text,' \
+            'TitleSub text,' \
+            'Desc text,' \
+            'Icon text,' \
+            'Genre text,' \
+            'PRIMARY KEY (StartTime, EndTime, Channel)' \
+            ')'
         db_connection.execute(sql)
 
-        sql = 'create table if not exists channels ('
-        sql += 'Id integer,'
-        sql += 'Title text,'
-        sql += 'Logo text,'
-        sql += 'PRIMARY KEY (Id)'
-        sql += ')'
+        sql = 'create table if not exists channels (' \
+            'Id integer,' \
+            'Title text,' \
+            'Logo text,' \
+            'PRIMARY KEY (Id)' \
+            ')'
         db_connection.execute(sql)
 
         db_connection.commit()
@@ -73,7 +73,7 @@ class Database():
         channels = []
         db_connection = sqlite3.connect(self.db_path)
         db_cursor = db_connection.cursor()
-        db_cursor.execute('select * from channels order by title asc')
+        db_cursor.execute('select * from channels order by lower(title) asc')
         for row in db_cursor:
             id = str(row[0])
             title = str(row[1].encode('utf-8'))
