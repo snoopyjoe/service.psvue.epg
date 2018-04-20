@@ -22,7 +22,11 @@ def epg_get_stream(url):
 
     r = requests.get(url, headers=headers, cookies=load_cookies(), verify=VERIFY)
     json_source = r.json()
-    stream_url = json_source['body']['video']
+    if ADDON.getSetting(id='inputstream') == 'false':
+        stream_url = r.json()['body']['video']
+
+    elif ADDON.getSetting(id='inputstream') == 'true':
+        stream_url = r.json()['body']['video_alt']
 
     return stream_url
 

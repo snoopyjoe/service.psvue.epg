@@ -2,5 +2,6 @@
 <settings>
     <setting id="port" type="number" label="Port" default="54321" />
     <setting id="build_epg" type="bool" label="Build EPG XML file" default="true"/>
-    <setting id="epg_days" type="number" label="EPG Days" default="2"/>
+    <setting id="epg_days" type="slider" label="EPG Days" default="2" range="1,1,8" option="int"/>
+    <setting type="bool" label="Use alternate Inputstream url" id="inputstream" default="false" />
 </settings>
