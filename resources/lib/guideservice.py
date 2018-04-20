@@ -35,7 +35,10 @@ class BuildGuide(threading.Thread):
                 xbmc.log('BuildGuide: Main guide thread active, waiting for finish')
 
             # Build short guide with more info
-            channel_ids = PS_VUE_ADDON.getSetting('channelIDs').split(',')
+            channel_ids = []
+            for channel_id, title, logo in self.db.get_db_channels():
+                channel_ids.append(channel_id)
+
             third = int(math.ceil(len(channel_ids) / 3))
             self.guide_thread_2 = threading.Thread(name='GuideThread 2', target=self.short_guide(channel_ids[:third]))
             self.guide_thread_3 = threading.Thread(name='GuideThread 3', target=self.short_guide(channel_ids[third:third + third]))
@@ -67,7 +70,11 @@ class BuildGuide(threading.Thread):
                 break
 
     def long_guide(self):
-        channel_ids = PS_VUE_ADDON.getSetting('channelIDs')
+        channel_ids = ''
+        for channel_id, title, logo in self.db.get_db_channels():
+            if channel_ids != '':
+                channel_ids += ','
+            channel_ids += channel_id
 
         url = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2/airings'
         headers = {

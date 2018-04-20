@@ -33,7 +33,7 @@ msgid "EPG"
 msgstr ""
 
 msgctxt "#30201"
-msgid "Build on Start"
+msgid "Build On Start"
 msgstr ""
 
 msgctxt "#30202"
