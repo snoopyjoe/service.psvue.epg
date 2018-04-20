@@ -15,13 +15,13 @@ class MainService:
         self.psvuewebservice = PSVueWebService()
         self.psvuewebservice.start()
 
-        xbmc.log('Calling BuildGuide to start....')
-        self.guideservice = BuildGuide()
-        self.guideservice.start()
-
         self.db = Database()
         self.db.set_db_channels(get_channel_list())
         build_playlist(self.db.get_db_channels())
+
+        xbmc.log('Calling BuildGuide to start....')
+        self.guideservice = BuildGuide()
+        self.guideservice.start()
 
         self.last_update = datetime.now()
         self.main_loop()
