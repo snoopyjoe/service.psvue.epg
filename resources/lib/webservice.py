@@ -15,13 +15,11 @@ def epg_get_stream(url):
         'Accept-Encoding': 'gzip, deflate, br',
         'User-Agent': UA_ANDROID_TV,
         'Connection': 'Keep-Alive',
-        'Host': 'media-framework.totsuko.tv',
         'reqPayload': PS_VUE_ADDON.getSetting(id='EPGreqPayload'),
         'X-Requested-With': 'com.snei.vue.android'
     }
 
     r = requests.get(url, headers=headers, cookies=load_cookies(), verify=VERIFY)
-    json_source = r.json()
     if ADDON.getSetting(id='inputstream') == 'false':
         stream_url = r.json()['body']['video']
 
@@ -63,7 +61,6 @@ class RequestHandler(BaseHTTPRequestHandler):
         headers = {
             'Content-type': 'text/html;charset=utf-8',
             'Connection': 'close',
-            #'Host': 'media-framework.totsuko.tv',
             'Location': location,
             'Set-Cookie': 'reqPayload=' + '"' + PS_VUE_ADDON.getSetting(id='EPGreqPayload') + '"' +
                           '; Domain=totsuko.tv; Path=/'

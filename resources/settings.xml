@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <setting id="port" type="number" label="Port" default="54321" />
-    <setting id="build_epg" type="bool" label="Build EPG XML file" default="true"/>
-    <setting id="epg_days" type="slider" label="EPG Days" default="2" range="1,1,8" option="int"/>
-    <setting type="bool" label="Use alternate Inputstream url" id="inputstream" default="false" />
+    <category label="30100">
+        <setting id="port" type="number" label="30101" default="54321" />
+        <setting id="inputstream" type="bool" label="30102" default="false" />
+    </category>
+    <category label="30200">
+        <setting id="epg_on_start" type="bool" label="30201"  default="true"/>
+        <setting id="epg_days" type="slider" label="30202" default="2" range="1,1,8" option="int"/>
+        <setting id="epg_interval" type="slider" label="30203" default="1" range="1,1,24" option="int"/>
+    </category>
 </settings>

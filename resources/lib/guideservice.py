@@ -10,9 +10,9 @@ class BuildGuide(threading.Thread):
     guide_thread_3 = None
     guide_thread_4 = None
     keep_running = True
-    up_to_date = False
     monitor = xbmc.Monitor()
-    update_interval = 3600
+    update_interval = int(ADDON.getSetting('epg_interval')) * 3600
+    update_on_start = ADDON.getSetting('epg_on_start')
 
     def __init__(self):
         threading.Thread.__init__(self)
@@ -22,9 +22,12 @@ class BuildGuide(threading.Thread):
         xbmc.log('BuildGuide: Thread starting....')
 
         first_time_thru = True
+        if self.update_on_start == 'false':
+            first_time_thru = False
+            self.monitor.waitForAbort(self.update_interval)
+
         while not self.monitor.abortRequested():
             xbmc.log('BuildGuide: Looping through guide days....')
-
             # Build main guide longer w/ less info
             self.guide_thread_1 = threading.Thread(name='GuideThread 1', target=self.long_guide())
 
