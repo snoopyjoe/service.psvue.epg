@@ -28,6 +28,10 @@ msgctxt "#30102"
 msgid "Use Alternate Stream URL"
 msgstr ""
 
+msgctxt "#30103"
+msgid "EPG Data Location"
+msgstr ""
+
 msgctxt "#30200"
 msgid "EPG"
 msgstr ""

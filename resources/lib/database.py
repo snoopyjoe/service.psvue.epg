@@ -6,15 +6,17 @@ from globals import *
 class Database():
     db_path = os.path.join(SAVE_LOCATION, 'epg.db')
     xml_path = os.path.join(SAVE_LOCATION, 'epg.xml')
+    db_copy = os.path.join(COPY_LOCATION, 'epg.db')
+    xml_copy = os.path.join(COPY_LOCATION, 'epg.xml')
     date_format = "%Y%m%d%H%M%S"
 
     def __init__(self):
         if not xbmcvfs.exists(self.db_path):
             # Create db file if it doesn't exist
             open(self.db_path, 'a').close()
-
+            
         db_connection = sqlite3.connect(self.db_path)
-
+        
         sql = 'create table if not exists epg (' \
             'StartTime integer,' \
             'EndTime integer,' \
@@ -126,9 +128,15 @@ class Database():
 
         master_file.write('</tv>')
         master_file.close()
+        #Copy xml file to specified location from settings
+        xbmc.log("Copying XML file... ")
+        xbmcvfs.copy(self.xml_path, self.xml_copy)
+        xbmc.log("COPIED XML file!!! ")
         db_connection.close()
         xbmc.log('BuildGuide: Master file built.')
 
         check_iptv_setting('epgPath', self.xml_path)
-
-
+        #Copy db file to specified location from settings
+        xbmc.log("Copying DataBase file... ")
+        xbmcvfs.copy(self.db_path, self.db_copy)
+        xbmc.log("COPIED DataBase file!!! ")
