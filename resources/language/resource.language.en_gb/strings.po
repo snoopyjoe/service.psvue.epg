@@ -47,3 +47,7 @@ msgstr ""
 msgctxt "#30203"
 msgid "Refresh Interval (Hours)"
 msgstr ""
+
+msgctxt "#30204"
+msgid "Slave Mode (Remote Download)"
+msgstr ""
