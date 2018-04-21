@@ -6,8 +6,9 @@
         <setting id="location" type="folder" label="30103"  default="special://profile/addon_data/service.psvue.epg" source="files" option="writeable"/>
     </category>
     <category label="30200">
-        <setting id="epg_on_start" type="bool" label="30201"  default="true"/>
-        <setting id="epg_days" type="slider" label="30202" default="2" range="1,1,7" option="int"/>
-        <setting id="epg_interval" type="slider" label="30203" default="1" range="1,1,24" option="int"/>
+        <setting id="slave" type="bool" label="30204"  default="false"/>
+        <setting id="epg_on_start" type="bool" label="30201"  default="true" enable="eq(-1,false)"/>
+        <setting id="epg_days" type="slider" label="30202" default="2" range="1,1,7" option="int" enable="eq(-2,false)"/>
+        <setting id="epg_interval" type="slider" label="30203" default="1" range="1,1,24" option="int" enable="eq(-3,false)"/>
     </category>
 </settings>
