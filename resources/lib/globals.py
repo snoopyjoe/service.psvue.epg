@@ -6,7 +6,7 @@ import time
 import requests
 import sys
 import urllib
-import xbmc, xbmcgui, xbmcaddon
+import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import _strptime
 
 
@@ -19,14 +19,16 @@ IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
 
 ADDON = xbmcaddon.Addon()
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
-ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
+ADDON_PATH_PROFILE = xbmc.translatePath(ADDON.getAddonInfo('profile'))
 UA_ANDROID_TV = 'Mozilla/5.0 (Linux; Android 6.0.1; Hub Build/MHC19J; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Safari/537.36'
 UA_ADOBE = 'Adobe Primetime/1.4 Dalvik/2.1.0 (Linux; U; Android 6.0.1 Build/MOB31H)'
 CHANNEL_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/channel'
 EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
 SHOW_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/airing/'
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
 SAVE_LOCATION = ADDON_PATH_PROFILE
+COPY_LOCATION = xbmc.translatePath(ADDON.getSetting(id='location'))
 VERIFY = True
 
 
@@ -118,6 +120,7 @@ def get_channel_list():
 
 def build_playlist(channels):
     playlist_path = os.path.join(SAVE_LOCATION, 'playlist.m3u')
+    playlist_copy = os.path.join(COPY_LOCATION, 'playlist.m3u')
     m3u_file = open(playlist_path, "w")
     m3u_file.write("#EXTM3U")
     m3u_file.write("\n")
@@ -136,6 +139,9 @@ def build_playlist(channels):
         m3u_file.write(url + "\n")
 
     m3u_file.close()
+    xbmc.log("Copying Playlist... ")
+    xbmcvfs.copy(playlist_path, playlist_copy)
+    xbmc.log("COPIED Playlist!!! ")
 
     check_iptv_setting('epgTSOverride', 'true')
     check_iptv_setting('m3uPathType', '0')
