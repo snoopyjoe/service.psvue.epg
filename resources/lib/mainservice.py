@@ -7,13 +7,15 @@ from webservice import PSVueWebService
 class MainService:
     monitor = None
     last_update = None
-
+    
     def __init__(self):
         self.monitor = xbmc.Monitor()
 
         xbmc.log('Calling PSVueWebService to start....')
         self.psvuewebservice = PSVueWebService()
         self.psvuewebservice.start()
+        if ADDON.getSetting(id='slave') == 'true':
+            sys.exit()
 
         self.db = Database()
         self.db.set_db_channels(get_channel_list())
