@@ -3,7 +3,7 @@
     <category label="30100">
         <setting id="port" type="number" label="30101" default="54321" />
         <setting id="inputstream" type="bool" label="30102" default="false" />
-        <setting id="location" type="folder" label="30103"  default="special://profile/addon_data/service.psvue.epg" source="files" option="writeable"/>
+        <setting id="location" type="folder" label="30103"  default="special://profile/addon_data/plugin.video.psvue" source="files" option="writeable"/>
     </category>
     <category label="30200">
         <setting id="slave" type="bool" label="30204"  default="false"/>
