@@ -28,6 +28,10 @@ msgctxt "#30102"
 msgid "Use Alternate Stream URL"
 msgstr ""
 
+msgctxt "#30103"
+msgid "EPG Data Location"
+msgstr ""
+
 msgctxt "#30200"
 msgid "EPG"
 msgstr ""
@@ -42,4 +46,8 @@ msgstr ""
 
 msgctxt "#30203"
 msgid "Refresh Interval (Hours)"
+msgstr ""
+
+msgctxt "#30204"
+msgid "Slave Mode (Remote Download)"
 msgstr ""

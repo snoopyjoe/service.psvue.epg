@@ -6,7 +6,7 @@ import time
 import requests
 import sys
 import urllib
-import xbmc, xbmcgui, xbmcaddon
+import xbmc, xbmcgui, xbmcaddon, xbmcvfs
 import _strptime
 
 
@@ -26,7 +26,9 @@ CHANNEL_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/str
 EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
 SHOW_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/airing/'
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
 SAVE_LOCATION = ADDON_PATH_PROFILE
+COPY_LOCATION = xbmc.translatePath(ADDON.getSetting(id='location'))
 VERIFY = True
 
 
@@ -118,6 +120,7 @@ def get_channel_list():
 
 def build_playlist(channels):
     playlist_path = os.path.join(SAVE_LOCATION, 'playlist.m3u')
+    playlist_copy = os.path.join(COPY_LOCATION, 'playlist.m3u')
     m3u_file = open(playlist_path, "w")
     m3u_file.write("#EXTM3U")
     m3u_file.write("\n")
@@ -136,6 +139,9 @@ def build_playlist(channels):
         m3u_file.write(url + "\n")
 
     m3u_file.close()
+    xbmc.log("Copying Playlist... ")
+    xbmcvfs.copy(playlist_path, playlist_copy)
+    xbmc.log("COPIED Playlist!!! ")
 
     check_iptv_setting('epgTSOverride', 'true')
     check_iptv_setting('m3uPathType', '0')
