@@ -139,9 +139,10 @@ def build_playlist(channels):
         m3u_file.write(url + "\n")
 
     m3u_file.close()
-    xbmc.log("Copying Playlist... ")
-    xbmcvfs.copy(playlist_path, playlist_copy)
-    xbmc.log("COPIED Playlist!!! ")
+    if COPY_LOCATION != SAVE_LOCATION:
+        xbmc.log("Copying Playlist... ")
+        xbmcvfs.copy(playlist_path, playlist_copy)
+        xbmc.log("COPIED Playlist!!! ")
 
     check_iptv_setting('epgTSOverride', 'true')
     check_iptv_setting('m3uPathType', '0')
