@@ -32,6 +32,10 @@ msgctxt "#30103"
 msgid "EPG Data Location"
 msgstr ""
 
+msgctxt "#30104"
+msgid "Enable Custom Directory"
+msgstr ""
+
 msgctxt "#30200"
 msgid "EPG"
 msgstr ""

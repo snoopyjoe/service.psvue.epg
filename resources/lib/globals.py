@@ -139,12 +139,11 @@ def build_playlist(channels):
         channel_info += ' group_title="PS Vue",' + title
         m3u_file.write(channel_info + "\n")
         m3u_file.write(url + "\n")
-
     m3u_file.close()
-    xbmc.log("Copying Playlist... ")
-    xbmcvfs.copy(playlist_path, playlist_copy)
-    xbmc.log("COPIED Playlist!!! ")
-
+    if ADDON.getSetting(id='custom_directory') == 'true':
+        xbmc.log("Copying Playlist... ")
+        xbmcvfs.copy(playlist_path, playlist_copy)
+        xbmc.log("COPIED Playlist!!! ")
     check_iptv_setting('epgTSOverride', 'true')
     check_iptv_setting('m3uPathType', '0')
     check_iptv_setting('m3uPath', playlist_path)
