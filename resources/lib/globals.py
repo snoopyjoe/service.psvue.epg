@@ -139,7 +139,7 @@ def build_playlist(channels):
         m3u_file.write(url + "\n")
 
     m3u_file.close()
-    if COPY_LOCATION != SAVE_LOCATION:
+    if ADDON.getSetting(id='custom_directory') == 'true':
         xbmc.log("Copying Playlist... ")
         xbmcvfs.copy(playlist_path, playlist_copy)
         xbmc.log("COPIED Playlist!!! ")
