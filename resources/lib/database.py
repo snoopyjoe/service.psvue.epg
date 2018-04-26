@@ -129,7 +129,7 @@ class Database():
         master_file.write('</tv>')
         master_file.close()
         #Copy xml file to specified location from settings
-        if COPY_LOCATION != SAVE_LOCATION:
+        if ADDON.getSetting(id='custom_directory') == 'true':
             xbmc.log("Copying XML file... ")
             xbmcvfs.copy(self.xml_path, self.xml_copy)
             xbmc.log("COPIED XML file!!! ")
@@ -138,7 +138,7 @@ class Database():
 
         check_iptv_setting('epgPath', self.xml_path)
         #Copy db file to specified location from settings
-        if COPY_LOCATION != SAVE_LOCATION:
+        if ADDON.getSetting(id='custom_directory') == 'true':
             xbmc.log("Copying DataBase file... ")
             xbmcvfs.copy(self.db_path, self.db_copy)
             xbmc.log("COPIED DataBase file!!! ")
