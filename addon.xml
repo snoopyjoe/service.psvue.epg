@@ -4,7 +4,6 @@
     <import addon="plugin.video.psvue" version="2018.2.15"/>
     <import addon="script.module.requests" version="2.9.1"/>
     <import addon="xbmc.python" version="2.25.0"/>
-    <import addon="script.module.m3u8" version="0.2.10"/>
   </requires>
    <extension point="xbmc.service" library="service.py" start="startup" />
   <extension point="xbmc.addon.metadata">
