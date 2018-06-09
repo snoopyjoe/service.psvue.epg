@@ -28,18 +28,18 @@ def epg_get_stream(url):
         stream_url = r.json()['body']['video_alt']
     
     m3u8_request = requests.get(stream_url, headers=headers)
-        variant_m3u8 = m3u8.loads(m3u8_request.text)
-        bandwidth = 0
-        best_stream = ''
-        for playlist in variant_m3u8.playlists:
-           xbmc.log(str(playlist.stream_info.bandwidth))
-           xbmc.log(playlist.uri)
-            if playlist.stream_info.bandwidth > bandwidth:
-                bandwidth = playlist.stream_info.bandwidth
-                best_stream = playlist.uri
+    variant_m3u8 = m3u8.loads(m3u8_request.text)
+    bandwidth = 0
+    best_stream = ''
+    for playlist in variant_m3u8.playlists:
+        xbmc.log(str(playlist.stream_info.bandwidth))
+        xbmc.log(playlist.uri)
+        if playlist.stream_info.bandwidth > bandwidth:
+            bandwidth = playlist.stream_info.bandwidth
+            best_stream = playlist.uri
 
-        if 'http' not in best_stream and best_stream != '':
-           stream_url = stream_url.replace(stream_url.rsplit('/', 1)[-1], best_stream)
+    if 'http' not in best_stream and best_stream != '':
+        stream_url = stream_url.replace(stream_url.rsplit('/', 1)[-1], best_stream)
         
     return stream_url
 
