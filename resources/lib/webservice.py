@@ -99,7 +99,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             stream_url += headers
 
         listitem.setPath(stream_url)
-        xbmc.Player().play(item=stream_url + headers, listitem=listitem)
+        xbmc.Player().play(item=stream_url, listitem=listitem)
 
     def stream_request(self, request):
         self.send_response(404)
