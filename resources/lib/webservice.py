@@ -25,7 +25,7 @@ def epg_get_stream(url):
 
     elif ADDON.getSetting(id='inputstream') == 'true':
         stream_url = r.json()['body']['video_alt']
-    
+
     return stream_url
 
 
@@ -43,7 +43,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             channel_url = urllib.unquote(str(parameters['params'][0]))
             xbmc.log("Received Channel URL: " + channel_url)
 
-            self.pvr_request(channel_url)
+            #self.pvr_request(channel_url)
+            stream_url = epg_get_stream(channel_url)
+            xbmc.log("Retrieved Stream URL: " + stream_url)
+            self.play_as_listitem(stream_url)
         else:
             request = self.path
             self.stream_request(request)
@@ -51,10 +54,10 @@ class RequestHandler(BaseHTTPRequestHandler):
     def pvr_request(self, channel_url):
         stream_url = epg_get_stream(channel_url)
         xbmc.log("Retrieved Stream URL: " + stream_url)
+        location = stream_url
         
-        #location = stream_url
-        #if '18.' not in xbmc.getInfoLabel("System.BuildVersion"):
-        location = 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4'
+        if '18.' not in xbmc.getInfoLabel("System.BuildVersion"):
+            location = 'http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4'
 
         self.send_response(303)
 
@@ -81,8 +84,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         # Close the server response file
         self.wfile.close()
 
-        #if '18.' not in xbmc.getInfoLabel("System.BuildVersion"):
-        self.play_as_listitem(stream_url)
+        if '18.' not in xbmc.getInfoLabel("System.BuildVersion"):
+            self.play_as_listitem(stream_url)
 
     def play_as_listitem(self, stream_url):
         headers = '|User-Agent='
@@ -99,7 +102,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             stream_url += headers
 
         listitem.setPath(stream_url)
-        xbmc.Player().play(item=stream_url, listitem=listitem)
+        xbmc.Player().play(item=stream_url + headers, listitem=listitem)
 
     def stream_request(self, request):
         self.send_response(404)
