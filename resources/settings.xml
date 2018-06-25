@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <category label="30100">
-        <setting id="port" type="number" label="30101" default="54321" />
-        <setting id="inputstream" type="bool" label="30102" default="false" />
         <setting id="custom_directory" type="bool" label="30104"  default="false"/>
         <setting id="location" type="folder" label="30103"  default="special://profile/addon_data/plugin.video.psvue" source="files" option="writeable" enable="eq(-1,true)"/>
     </category>
     <category label="30200">
-        <setting id="slave" type="bool" label="30204"  default="false"/>
-        <setting id="epg_on_start" type="bool" label="30201"  default="true" enable="eq(-1,false)"/>
-        <setting id="epg_days" type="slider" label="30202" default="2" range="1,1,7" option="int" enable="eq(-2,false)"/>
-        <setting id="epg_interval" type="slider" label="30203" default="1" range="1,1,24" option="int" enable="eq(-3,false)"/>
+        <setting id="epg_on_start" type="bool" label="30201"  default="true"/>
+        <setting id="epg_days" type="slider" label="30202" default="2" range="1,1,7" option="int"/>
+        <setting id="epg_interval" type="slider" label="30203" default="1" range="1,1,24" option="int"/>
     </category>
 </settings>
