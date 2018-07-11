@@ -102,6 +102,7 @@ def sleep(time, units):
 def get_channel_list():
     json_source = get_json(EPG_URL + '/browse/items/channels/filter/all/sort/channeltype/offset/0/size/500')
     channel_list = []
+    sort_order = 1
     for channel in json_source['body']['items']:
         title = channel['title']
         if channel['channel_type'] == 'linear':
@@ -113,7 +114,8 @@ def get_channel_list():
                         logo = image['src']
                         break
 
-            channel_list.append([channel_id, title, logo])
+            channel_list.append([channel_id, title, logo, sort_order])
+            sort_order += 1
 
     return channel_list
 

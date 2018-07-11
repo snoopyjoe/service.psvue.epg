@@ -34,6 +34,7 @@ class Database():
             'Id integer,' \
             'Title text,' \
             'Logo text,' \
+            'SortOrder integer,' \
             'PRIMARY KEY (Id)' \
             ')'
         db_connection.execute(sql)
@@ -67,7 +68,7 @@ class Database():
 
     def set_db_channels(self, channel_list):
         db_connection = sqlite3.connect(self.db_path)
-        db_connection.executemany('replace into channels (Id, Title, Logo) values (?,?,?)', channel_list)
+        db_connection.executemany('replace into channels (Id, Title, Logo, SortOrder) values (?,?,?,?)', channel_list)
         db_connection.commit()
         db_connection.close()
 
@@ -75,7 +76,7 @@ class Database():
         channels = []
         db_connection = sqlite3.connect(self.db_path)
         db_cursor = db_connection.cursor()
-        db_cursor.execute('select * from channels order by lower(title) asc')
+        db_cursor.execute('select * from channels order by SortOrder asc')
         for row in db_cursor:
             id = str(row[0])
             title = str(row[1].encode('utf-8'))
