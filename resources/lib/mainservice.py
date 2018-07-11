@@ -1,8 +1,6 @@
 from globals import *
 from database import Database
 from guideservice import BuildGuide
-from webservice import PSVueWebService
-
 
 class MainService:
     monitor = None
@@ -10,12 +8,6 @@ class MainService:
     
     def __init__(self):
         self.monitor = xbmc.Monitor()
-
-        xbmc.log('Calling PSVueWebService to start....')
-        self.psvuewebservice = PSVueWebService()
-        self.psvuewebservice.start()
-        if ADDON.getSetting(id='slave') == 'true':
-            sys.exit()
 
         self.db = Database()
         self.db.set_db_channels(get_channel_list())
@@ -45,6 +37,5 @@ class MainService:
         self.close()
 
     def close(self):
-        self.psvuewebservice.stop()
         self.guideservice.stop()
         del self.monitor
