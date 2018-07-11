@@ -126,9 +126,17 @@ def build_playlist(channels):
     m3u_file.write("\n")
 
     for channel_id, title, logo in channels:
-        url = 'http://127.0.0.1:' + ADDON.getSetting(id='port') + '/psvue'
-        url += '?params=' + urllib.quote(CHANNEL_URL + '/' + channel_id)
-        url += '|User-Agent=' + UA_ADOBE
+        url = 'plugin://plugin.video.psvue/?url='
+        url += urllib.quote(CHANNEL_URL + '/' + channel_id)
+        url += '&mode=900'
+        url += '&title='+title
+        url += '&program_id=0000000'
+        url += '&series_id=00000'
+        url += '&channel_id='+channel_id
+        url += '&airing_id=00000000'
+        url += '&tms_id=EP000000000000'
+        url += '&icon='+logo
+
 
         m3u_file.write("\n")
         channel_info = '#EXTINF:-1 tvg-id="' + channel_id + '" tvg-name="' + title + '"'
