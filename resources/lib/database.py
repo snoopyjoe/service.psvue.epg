@@ -3,7 +3,7 @@ import xbmcvfs
 from globals import *
 
 
-class Database():
+class Database:
     db_path = os.path.join(SAVE_LOCATION, 'epg.db')
     xml_path = os.path.join(SAVE_LOCATION, 'epg.xml')
     db_copy = os.path.join(COPY_LOCATION, 'epg.db')
@@ -28,6 +28,9 @@ class Database():
             'Genre text,' \
             'PRIMARY KEY (StartTime, EndTime, Channel)' \
             ')'
+        db_connection.execute(sql)
+
+        sql = 'drop table if exists channels'
         db_connection.execute(sql)
 
         sql = 'create table if not exists channels (' \
@@ -56,7 +59,8 @@ class Database():
 
     def update_epg_info(self, program_list):
         db_connection = sqlite3.connect(self.db_path)
-        db_connection.executemany('replace into epg (StartTime, EndTime, Channel, Title, TitleSub, Desc, Icon, Genre) values (?,?,?,?,?,?,?,?)', program_list)
+        db_connection.executemany('replace into epg (StartTime, EndTime, Channel, Title, TitleSub, Desc, Icon, Genre) '
+                                  'values (?,?,?,?,?,?,?,?)', program_list)
         db_connection.commit()
         db_connection.close()
 
@@ -129,7 +133,7 @@ class Database():
 
         master_file.write('</tv>')
         master_file.close()
-        #Copy xml file to specified location from settings
+        # Copy xml file to specified location from settings
         if ADDON.getSetting(id='custom_directory') == 'true':
             xbmc.log("Copying XML file... ")
             xbmcvfs.copy(self.xml_path, self.xml_copy)
@@ -138,7 +142,7 @@ class Database():
         xbmc.log('BuildGuide: Master file built.')
 
         check_iptv_setting('epgPath', self.xml_path)
-        #Copy db file to specified location from settings
+        # Copy db file to specified location from settings
         if ADDON.getSetting(id='custom_directory') == 'true':
             xbmc.log("Copying DataBase file... ")
             xbmcvfs.copy(self.db_path, self.db_copy)
