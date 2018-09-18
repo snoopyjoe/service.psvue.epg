@@ -3,6 +3,7 @@
     <category label="30100">
         <setting id="custom_directory" type="bool" label="30104"  default="false"/>
         <setting id="location" type="folder" label="30103"  default="special://profile/addon_data/plugin.video.psvue" source="files" option="writeable" enable="eq(-1,true)"/>
+        <setting type="action" label="30105" action="RunPlugin(plugin://plugin.video.psvue/?mode=997)" option="close" />
     </category>
     <category label="30200">
         <setting id="epg_on_start" type="bool" label="30201"  default="true"/>

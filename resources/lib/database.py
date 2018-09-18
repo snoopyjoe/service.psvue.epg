@@ -30,9 +30,6 @@ class Database:
             ')'
         db_connection.execute(sql)
 
-        sql = 'drop table if exists channels'
-        db_connection.execute(sql)
-
         sql = 'create table if not exists channels (' \
             'Id integer,' \
             'Title text,' \
