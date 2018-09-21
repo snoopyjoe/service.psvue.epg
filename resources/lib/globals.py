@@ -143,7 +143,8 @@ def build_playlist(channels):
         m3u_file.write("\n")
         channel_info = '#EXTINF:-1 tvg-id="' + channel_id + '" tvg-name="' + title + '"'
 
-        if logo is not None: channel_info += ' tvg-logo="' + logo + '"'
+        if logo is not None:
+            channel_info += ' tvg-logo="' + logo + '"'
         channel_info += ' group_title="PS Vue",' + title
         m3u_file.write(channel_info + "\n")
         m3u_file.write(url + "\n")
@@ -152,6 +153,8 @@ def build_playlist(channels):
         xbmc.log("Copying Playlist... ")
         xbmcvfs.copy(playlist_path, playlist_copy)
         xbmc.log("COPIED Playlist!!! ")
+
+    check_iptv_setting('epgPathType', '0')
     check_iptv_setting('epgTSOverride', 'true')
     check_iptv_setting('m3uPathType', '0')
     check_iptv_setting('m3uPath', playlist_path)
