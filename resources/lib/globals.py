@@ -15,12 +15,11 @@ if not xbmc.getCondVisibility('System.HasAddon(pvr.iptvsimple)'):
     dialog.notification('PS Vue EPG', 'Please enable PVR IPTV Simple Client', xbmcgui.NOTIFICATION_INFO, 5000, False)
     sys.exit()
 
-IPTV_SIMPLE_ADDON = xbmcaddon.Addon('pvr.iptvsimple')
-
 ADDON = xbmcaddon.Addon()
 PS_VUE_ADDON = xbmcaddon.Addon('plugin.video.psvue')
 ADDON_PATH_PROFILE = xbmc.translatePath(PS_VUE_ADDON.getAddonInfo('profile'))
-UA_ANDROID_TV = 'Mozilla/5.0 (Linux; Android 6.0.1; Hub Build/MHC19J; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/61.0.3163.98 Safari/537.36'
+UA_ANDROID_TV = 'Mozilla/5.0 (Linux; Android 6.0.1; Hub Build/MHC19J; wv) AppleWebKit/537.36 (KHTML, like Gecko)' \
+                ' Version/4.0 Chrome/61.0.3163.98 Safari/537.36'
 UA_ADOBE = 'Adobe Primetime/1.4 Dalvik/2.1.0 (Linux; U; Android 6.0.1 Build/MOB31H)'
 CHANNEL_URL = 'https://media-framework.totsuko.tv/media-framework/media/v2.1/stream/channel'
 EPG_URL = 'https://epg-service.totsuko.tv/epg_service_sony/service/v2'
@@ -131,19 +130,12 @@ def build_playlist(channels):
         url = 'plugin://plugin.video.psvue/?url='
         url += urllib.quote(CHANNEL_URL + '/' + channel_id)
         url += '&mode=900'
-        url += '&title='+title
-        url += '&program_id=0000000'
-        url += '&series_id=00000'
-        url += '&channel_id='+channel_id
-        url += '&airing_id=00000000'
-        url += '&tms_id=EP000000000000'
-        url += '&icon='+logo
-
-
+        
         m3u_file.write("\n")
         channel_info = '#EXTINF:-1 tvg-id="' + channel_id + '" tvg-name="' + title + '"'
 
-        if logo is not None: channel_info += ' tvg-logo="' + logo + '"'
+        if logo is not None:
+            channel_info += ' tvg-logo="' + logo + '"'
         channel_info += ' group_title="PS Vue",' + title
         m3u_file.write(channel_info + "\n")
         m3u_file.write(url + "\n")
@@ -152,6 +144,8 @@ def build_playlist(channels):
         xbmc.log("Copying Playlist... ")
         xbmcvfs.copy(playlist_path, playlist_copy)
         xbmc.log("COPIED Playlist!!! ")
+
+    check_iptv_setting('epgPathType', '0')
     check_iptv_setting('epgTSOverride', 'true')
     check_iptv_setting('m3uPathType', '0')
     check_iptv_setting('m3uPath', playlist_path)

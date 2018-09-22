@@ -40,9 +40,12 @@ class BuildGuide(threading.Thread):
                 channel_ids.append(channel_id)
 
             third = int(math.ceil(len(channel_ids) / 3))
-            self.guide_thread_2 = threading.Thread(name='GuideThread 2', target=self.short_guide(channel_ids[:third]))
-            self.guide_thread_3 = threading.Thread(name='GuideThread 3', target=self.short_guide(channel_ids[third:third + third]))
-            self.guide_thread_4 = threading.Thread(name='GuideThread 4', target=self.short_guide(channel_ids[third + third:]))
+            self.guide_thread_2 = threading.Thread(name='GuideThread 2',
+                                                   target=self.short_guide(channel_ids[:third]))
+            self.guide_thread_3 = threading.Thread(name='GuideThread 3',
+                                                   target=self.short_guide(channel_ids[third:third + third]))
+            self.guide_thread_4 = threading.Thread(name='GuideThread 4',
+                                                   target=self.short_guide(channel_ids[third + third:]))
 
             xbmc.log('BuildGuide: before loop')
             thread_alive = True
@@ -60,8 +63,10 @@ class BuildGuide(threading.Thread):
             self.db.build_epg_xml()
             if first_time_thru:
                 xbmc.log('BuildGuide: First time thru, toggling IPTV restart')
-                pvr_toggle_off = '{"jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": "pvr.iptvsimple", "enabled": false}, "id": 1}'
-                pvr_toggle_on = '{"jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", "params": {"addonid": "pvr.iptvsimple", "enabled": true}, "id": 1}'
+                pvr_toggle_off = '{"jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", ' \
+                                 '"params": {"addonid": "pvr.iptvsimple", "enabled": false}, "id": 1}'
+                pvr_toggle_on = '{"jsonrpc": "2.0", "method": "Addons.SetAddonEnabled", ' \
+                                '"params": {"addonid": "pvr.iptvsimple", "enabled": true}, "id": 1}'
                 xbmc.executeJSONRPC(pvr_toggle_off)
                 xbmc.executeJSONRPC(pvr_toggle_on)
                 first_time_thru = False
@@ -94,7 +99,8 @@ class BuildGuide(threading.Thread):
         if guide_start is None or guide_start == '':
             guide_start = datetime.utcnow() - timedelta(hours=1, minutes=datetime.utcnow().minute)
 
-        date_diff = (datetime.utcnow() + timedelta(minutes=(-1 * datetime.utcnow().minute), days=self.guide_days)) - guide_start
+        date_diff = (datetime.utcnow() +
+                     timedelta(minutes=(-1 * datetime.utcnow().minute), days=self.guide_days)) - guide_start
         guide_end = guide_start + date_diff
 
         payload = '{"start":"' + guide_start.strftime(DATE_FORMAT) + '","end":"' + guide_end.strftime(

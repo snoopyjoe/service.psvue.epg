@@ -2,6 +2,7 @@ from globals import *
 from database import Database
 from guideservice import BuildGuide
 
+
 class MainService:
     monitor = None
     last_update = None
