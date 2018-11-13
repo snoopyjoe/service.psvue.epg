@@ -6,7 +6,6 @@ from globals import *
 class Database:
     db_path = os.path.join(SAVE_LOCATION, 'epg.db')
     xml_path = os.path.join(SAVE_LOCATION, 'epg.xml')
-    db_copy = os.path.join(COPY_LOCATION, 'epg.db')
     xml_copy = os.path.join(COPY_LOCATION, 'epg.xml')
     date_format = "%Y%m%d%H%M%S"
 
@@ -139,8 +138,3 @@ class Database:
         xbmc.log('BuildGuide: Master file built.')
 
         check_iptv_setting('epgPath', self.xml_path)
-        # Copy db file to specified location from settings
-        if ADDON.getSetting(id='custom_directory') == 'true':
-            xbmc.log("Copying DataBase file... ")
-            xbmcvfs.copy(self.db_path, self.db_copy)
-            xbmc.log("COPIED DataBase file!!! ")
